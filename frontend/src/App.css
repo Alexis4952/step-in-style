@@ -12,18 +12,7 @@ body, html, #root {
   padding: 0;
 }
 
-/* Subtle zoom adjustments for very large screens only */
-@media (min-width: 1400px) {
-  body {
-    zoom: 0.95; /* 95% zoom για πολύ μεγάλες οθόνες */
-  }
-}
 
-@media (min-width: 1800px) {
-  body {
-    zoom: 0.9; /* 90% zoom για ultra-wide οθόνες */
-  }
-}
 
 body {
   font-family: 'Montserrat', Arial, sans-serif;
