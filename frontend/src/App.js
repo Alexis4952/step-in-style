@@ -21,6 +21,8 @@ import AdminDashboard from './AdminDashboard';
 import AdminOrders from './AdminOrders';
 import AdminProducts from './AdminProducts';
 import AdminUsers from './AdminUsers';
+// 🔥 ULTRA MODERN MOBILE IMPORTS
+import { useMobile, MobileNavbar, MobileHero, MobileProductCard, MobileCarouselsByTag } from './MobileApp';
 
 const logoMain = process.env.PUBLIC_URL + '/step in style.jpg';
 
@@ -32,10 +34,20 @@ const defaultMockProducts = [];
 export function Navbar({ hideLogo }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
+  const mobile = useMobile();
+  
+  // Αν είμαστε σε mobile, χρησιμοποιούμε το MobileNavbar
+  if (mobile) {
+    return <MobileNavbar />;
+  }
+  
+  // Desktop Navbar
   return (
     <nav className={`premium-navbar${hideLogo ? ' navbar-no-logo' : ''}`}>
       {!hideLogo && (
-      <img src={process.env.PUBLIC_URL + '/step in style.jpg'} alt="Step in Style logo" className="premium-logo" />
+      <Link to="/">
+        <img src={process.env.PUBLIC_URL + '/step in style.jpg'} alt="Step in Style logo" className="premium-logo" />
+      </Link>
       )}
       <div className="Navbar-right-card">
         <Link to="/" className="Navbar-link">Αρχική</Link>
@@ -72,6 +84,14 @@ export function Navbar({ hideLogo }) {
 }
 
 function Hero() {
+  const mobile = useMobile();
+  
+  // Αν είμαστε σε mobile, χρησιμοποιούμε το MobileHero
+  if (mobile) {
+    return <MobileHero />;
+  }
+  
+  // Desktop Hero
   return (
     <section className="Premium-hero">
       <div className="Hero-overlay">
@@ -89,8 +109,14 @@ function Hero() {
 
 export function ProductCardWithLogo({ product }) {
   const { addToCart } = useCart();
-  // DEBUG: Δείξε τα πεδία του προϊόντος στην κάρτα
-
+  const mobile = useMobile();
+  
+  // Αν είμαστε σε mobile, χρησιμοποιούμε το MobileProductCard
+  if (mobile) {
+    return <MobileProductCard product={product} />;
+  }
+  
+  // Desktop ProductCard
   return (
     <Link to={`/product/${product.id}`} style={{textDecoration:'none'}}>
     <div className="premium-card" style={{margin: 16, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
@@ -103,7 +129,7 @@ export function ProductCardWithLogo({ product }) {
         <span style={{color:'#b87b2a',fontWeight:900,fontSize:24}}>{product.priceDisplay}</span>
       </div>
       <div style={{color: '#7a4a1a', fontSize: 15, marginBottom: 10}}>{product.brand}</div>
-        <button className="premium-product-btn" onClick={e => { e.preventDefault(); addToCart(product); }}>Προσθήκη στο καλάθι</button>
+      <button className="premium-product-btn" onClick={e => { e.preventDefault(); addToCart(product); }}>Προσθήκη στο καλάθι</button>
     </div>
     </Link>
   );
@@ -341,6 +367,7 @@ function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false); // State για mobile filters
   
   useEffect(() => {
     if (prices.length > 0) setPriceRange([minPrice, maxPrice]);
@@ -510,8 +537,23 @@ function ProductsPage() {
       <div className="products-breadcrumbs">Αρχική &gt; Προϊόντα</div>
       <div className="products-top-title">Δείτε όλα τα προϊόντα μας</div>
       <section className="Products-section products-flex-wrapper">
+        
+        {/* Mobile Filters Toggle Button */}
+        <div className="mobile-filters-toggle">
+          <button 
+            className={`filters-toggle-btn ${filtersOpen ? 'active' : ''}`}
+            onClick={() => setFiltersOpen(!filtersOpen)}
+          >
+            <span className="toggle-icon">🔍</span>
+            <span className="toggle-text">
+              {filtersOpen ? 'Κρύψε Φίλτρα' : 'Εμφάνιση Φίλτρων'}
+            </span>
+            <span className={`toggle-arrow ${filtersOpen ? 'up' : 'down'}`}>▼</span>
+          </button>
+        </div>
+
         {/* Sidebar Filters */}
-        <aside className="Products-sidebar products-sidebar-align-more">
+        <aside className={`Products-sidebar products-sidebar-align-more ${filtersOpen ? 'mobile-open' : 'mobile-closed'}`}>
           <div className="sidebar-header">
             <h3>🔍 Φίλτρα Αναζήτησης</h3>
             <button 
@@ -680,18 +722,18 @@ function ProductsPage() {
           </div>
         </aside>
         {/* Products Grid */}
-        <div className="Products-main">
-          <div className="products-toolbar" style={{display:'flex',alignItems:'center',gap:18,marginBottom:8}}>
+        <div className="Products-main Products-content">
+          <div className="products-toolbar" style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
             <div className="Products-title products-title-align" style={{marginBottom:0}}>Όλα τα Προϊόντα</div>
             <input
               className="products-search-bar"
               type="text"
-              placeholder="Αναζήτηση προϊόντος ή κωδικού..."
+              placeholder="Αναζήτηση..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{marginLeft: 24, minWidth: 320, width: 340, borderRadius: 16, border: '1.5px solid #e5d6c7', padding: '12px 22px', fontSize: 17, fontFamily: 'Montserrat', background: '#fff6ec', color: '#7a4a1a', fontWeight: 500, boxShadow: '0 2px 12px #b87b2a11'}}
+              style={{marginLeft: 8, minWidth: 120, width: 'auto', maxWidth: 200, borderRadius: 8, border: '1px solid #e5d6c7', padding: '8px 12px', fontSize: 14, fontFamily: 'Montserrat', background: '#fff6ec', color: '#7a4a1a', fontWeight: 500}}
             />
-            <select className="sort-dropdown" value={sortBy} onChange={handleSortChange} style={{marginLeft: 'auto', marginBottom: 0, padding: '7px 18px', borderRadius: 8, border: '1.5px solid #e5d6c7', fontFamily: 'Montserrat', fontWeight: 600, color: '#b87b2a', background: '#fff6ec'}}>
+            <select className="sort-dropdown" value={sortBy} onChange={handleSortChange} style={{marginLeft: 'auto', marginBottom: 0, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5d6c7', fontFamily: 'Montserrat', fontWeight: 600, color: '#b87b2a', background: '#fff6ec', fontSize: 12, minWidth: 80}}>
               <option value="newest">Νεότερα</option>
               <option value="price-asc">Φθηνότερα</option>
               <option value="price-desc">Ακριβότερα</option>
@@ -702,17 +744,17 @@ function ProductsPage() {
           <div className="products-count">Βρέθηκαν {filteredProducts.length} προϊόντα</div>
           <div className="Products-grid-2cols">
             {visibleProducts.map(product => (
-              <div className="premium-card" key={product.id} style={{margin: 16, position: 'relative'}}>
+              <div className="premium-card" key={product.id}>
                 {/* BADGE */}
                 {product.oldPrice && <span className="product-badge offer-badge">Προσφορά</span>}
                 {!product.oldPrice && newestIds.includes(product.id) && <span className="product-badge new-badge">Νέο</span>}
                 <ProductImage src={product.image} alt={product.name} />
-                <h3 style={{fontFamily: 'Montserrat', fontWeight: 700, fontSize: 20, color: '#2d1c0b', marginBottom: 8}}>{product.name}</h3>
-                <div style={{color: '#b87b2a', fontWeight: 700, fontSize: 18, marginBottom: 6}}>
-                  {product.oldPriceDisplay && <span style={{textDecoration: 'line-through', color: '#b82a2a', fontSize: 15, marginRight: 8}}>{product.oldPriceDisplay}</span>}
+                <h3>{product.name}</h3>
+                <div className="product-price">
+                  {product.oldPriceDisplay && <span className="product-old-price">{product.oldPriceDisplay}</span>}
                   {product.priceDisplay ? product.priceDisplay : product.price}
                 </div>
-                <div style={{color: '#7a4a1a', fontSize: 15, marginBottom: 10}}>{product.brand}</div>
+                <div className="product-brand">{product.brand}</div>
                 <div className="product-card-actions">
                   <Link to={`/product/${product.id}`}><button className="premium-product-btn">Προβολή</button></Link>
                   <button className="quickview-btn" onClick={()=>setQuickViewProduct(product)}>Γρήγορη Προβολή</button>
@@ -970,6 +1012,14 @@ function NewProductsCarousel({ products }) {
 function CarouselsByTag({ mockProducts }) {
   console.log('CarouselsByTag - mockProducts:', mockProducts?.length || 0);
   
+  const mobile = useMobile();
+  
+  // Αν είμαστε σε mobile, χρησιμοποιούμε το MobileCarouselsByTag
+  if (mobile) {
+    return <MobileCarouselsByTag mockProducts={mockProducts} />;
+  }
+  
+  // Desktop carousels
   const offers = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('offer'));
   const popular = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('popular'));
   const newest = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('new'));

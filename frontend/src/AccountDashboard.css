@@ -11,32 +11,116 @@
   background: #f7e9d6;
 }
 
-/* Mobile responsive account dashboard */
+/* CLEAN MOBILE ACCOUNT DASHBOARD */
 @media (max-width: 768px) {
+  .account-dashboard-bg {
+    background: #fff !important;
+  }
+  
   .account-dashboard-wrapper {
-    flex-direction: column;
+    flex-direction: column !important;
+    background: #fff !important;
   }
   
+  /* Mobile Account Header/Sidebar */
   .account-sidebar {
-    width: 100%;
-    height: auto;
-    border-radius: 0;
-    padding: 16px;
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    padding: 20px !important;
+    background: linear-gradient(135deg, #fff6ec 0%, #f6c77a 100%) !important;
+    border-bottom: 1px solid rgba(246, 199, 122, 0.3) !important;
+    box-shadow: 0 2px 15px rgba(184, 123, 42, 0.1) !important;
   }
   
+  .sidebar-title {
+    font-size: 1.3rem !important;
+    color: #b87b2a !important;
+    margin-bottom: 15px !important;
+    text-align: center !important;
+  }
+  
+  .sidebar-menu {
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  
+  .sidebar-menu-item {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(246, 199, 122, 0.5) !important;
+    border-radius: 20px !important;
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+    color: #b87b2a !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .sidebar-menu-item:hover {
+    background: #b87b2a !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+  }
+  
+  /* Mobile Account Content */
   .account-content {
-    padding: 16px !important;
+    padding: 20px !important;
+    background: #fff !important;
+  }
+  
+  .content-header h2 {
+    font-size: 1.4rem !important;
+    color: #b87b2a !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
   }
   
   .stats-grid {
     grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
+    gap: 15px !important;
+    margin-bottom: 25px !important;
+  }
+  
+  .stat-card {
+    background: #fff !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    text-align: center !important;
+    box-shadow: 0 4px 15px rgba(184, 123, 42, 0.08) !important;
+    border: 1px solid rgba(246, 199, 122, 0.2) !important;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: #b87b2a !important;
+    margin-bottom: 5px !important;
+  }
+  
+  .stat-label {
+    font-size: 0.85rem !important;
+    color: #666 !important;
+    font-weight: 500 !important;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr !important;
+  }
+  
+  .account-sidebar {
+    padding: 15px !important;
+  }
+  
+  .sidebar-menu {
+    flex-direction: column !important;
+  }
+  
+  .sidebar-menu-item {
+    text-align: center !important;
   }
 }
 .account-sidebar {
