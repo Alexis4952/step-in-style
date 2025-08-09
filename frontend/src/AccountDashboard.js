@@ -1,25 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from './supabaseClient';
 import './AccountDashboard.css';
 import { FaUserCircle, FaSignOutAlt, FaBoxOpen, FaCog, FaShoppingBag, FaTag, FaEdit, FaHeadset, FaCalendarAlt, FaTimes, FaComments } from 'react-icons/fa';
 import logoMain from './logo.svg';
 import { useNavigate } from 'react-router-dom';
-
-const mockOrders = [
-  { id: 'ORD-2024-001', date: '2024-06-01', total: 129.99 },
-  { id: 'ORD-2024-002', date: '2024-06-10', total: 89.50 },
-  { id: 'ORD-2024-003', date: '2024-06-15', total: 49.00 },
-  { id: 'ORD-2024-004', date: '2024-06-18', total: 210.00 },
-  { id: 'ORD-2024-005', date: '2024-06-20', total: 75.99 },
-  { id: 'ORD-2024-006', date: '2024-06-22', total: 59.99 },
-];
-
-const mockActivity = [
-  { type: 'order', date: '2024-06-22', desc: 'Ολοκλήρωση παραγγελίας #ORD-2024-006' },
-  { type: 'profile', date: '2024-06-20', desc: 'Αλλαγή email' },
-  { type: 'order', date: '2024-06-20', desc: 'Ολοκλήρωση παραγγελίας #ORD-2024-005' },
-  { type: 'profile', date: '2024-06-18', desc: 'Αλλαγή τηλεφώνου' },
-];
 
 const QuickAction = ({ icon, label, onClick }) => (
   <button className="quick-action-btn" onClick={onClick}>
@@ -57,21 +42,59 @@ const OrdersModal = ({ open, onClose, orders }) => {
       document.body.style.overflow = '';
     };
   }, [open]);
+  
   if (!open) return null;
+  
   return (
     <div className="modal-overlay">
       <div className="modal-content orders-modal">
         <button className="modal-close-btn" onClick={onClose}><FaTimes /></button>
-            <h2>Οι Παραγγελίες μου</h2>
+        <h2>Οι Παραγγελίες μου</h2>
         {orders.length === 0 ? (
           <div className="no-orders">Δεν υπάρχουν παραγγελίες.</div>
         ) : (
           <div className="orders-list">
             {orders.map(order => (
               <div className="order-card" key={order.id}>
-                <div className="order-id">#{order.id}</div>
-                <div className="order-date">{order.date}</div>
-                <div className="order-total">Σύνολο: <b>{order.total.toFixed(2)}€</b></div>
+                <div className="order-header">
+                  <div className="order-id">#{order.id}</div>
+                  <div className="order-date">{order.date}</div>
+                  <div className="order-total">Σύνολο: <b>{order.total.toFixed(2)}€</b></div>
+                </div>
+                
+                {/* Order Items */}
+                {order.items && order.items.length > 0 && (
+                  <div className="order-items">
+                    <h4>Προϊόντα:</h4>
+                    {order.items.map((item, index) => (
+                      <div className="order-item" key={index}>
+                        {item.products && (
+                          <>
+                            <div className="item-image">
+                              <img 
+                                src={item.products.image_url || '/placeholder-product.jpg'} 
+                                alt={item.products.name}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = '/placeholder-product.jpg';
+                                }}
+                              />
+                            </div>
+                            <div className="item-details">
+                              <div className="item-name">{item.products.name}</div>
+                              <div className="item-category">{item.products.category} - {item.products.subcategory}</div>
+                              <div className="item-quantity">Ποσότητα: {item.quantity}</div>
+                              <div className="item-price">{parseFloat(item.price).toFixed(2)}€ ανά τεμάχιο</div>
+                              <div className="item-total">
+                                <strong>Σύνολο: {(parseFloat(item.price) * item.quantity).toFixed(2)}€</strong>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -178,6 +201,9 @@ const AccountDashboard = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [activity, setActivity] = useState([]);
+  const [dataLoading, setDataLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -186,10 +212,96 @@ const AccountDashboard = () => {
     }
   }, [user, loading, navigate]);
 
-  // Stats
-  const totalOrders = mockOrders.length;
-  const totalSpent = mockOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2);
-  const lastOrder = mockOrders[mockOrders.length - 1];
+  // Fetch user's orders and activity
+  useEffect(() => {
+    if (user && user.email) {
+      fetchUserData();
+    }
+  }, [user]);
+
+  const fetchUserData = async () => {
+    try {
+      setDataLoading(true);
+      
+      // Fetch user's orders by email
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_email', user.email)
+        .order('created_at', { ascending: false });
+
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError);
+        setOrders([]);
+      } else {
+        // For each order, fetch its items and product details
+        const ordersWithItems = await Promise.all(
+          (ordersData || []).map(async (order) => {
+            // Fetch order items
+            const { data: orderItems, error: itemsError } = await supabase
+              .from('order_items')
+              .select(`
+                *,
+                products (
+                  id,
+                  name,
+                  description,
+                  image_url,
+                  category,
+                  subcategory
+                )
+              `)
+              .eq('order_id', order.id);
+
+            if (itemsError) {
+              console.error('Error fetching order items:', itemsError);
+            }
+
+            return {
+              id: `ORD-${String(order.id).padStart(3, '0')}`,
+              date: new Date(order.created_at).toLocaleDateString('el-GR'),
+              total: parseFloat(order.total),
+              status: order.status,
+              raw: order,
+              items: orderItems || []
+            };
+          })
+        );
+
+        setOrders(ordersWithItems);
+        
+        // Generate activity from orders
+        const orderActivity = ordersWithItems.slice(0, 4).map(order => ({
+          type: 'order',
+          date: order.date,
+          desc: `${getStatusLabel(order.status)} παραγγελίας #${order.id}`
+        }));
+        
+        setActivity(orderActivity);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setOrders([]);
+      setActivity([]);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      'completed': 'Ολοκλήρωση',
+      'pending': 'Εκκρεμεί',
+      'processing': 'Επεξεργασία',
+      'cancelled': 'Ακύρωση'
+    };
+    return labels[status] || status;
+  };
+
+  // Stats from real data
+  const totalOrders = orders.length;
+  const totalSpent = orders.reduce((sum, o) => sum + o.total, 0).toFixed(2);
+  const lastOrder = orders.length > 0 ? orders[0] : null;
 
   const handleLogout = async () => {
     await logout();
@@ -224,19 +336,35 @@ const AccountDashboard = () => {
 
         {/* STATS CARDS */}
         <section className="dashboard-stats-row">
-          <StatCard icon={<FaShoppingBag />} label="Παραγγελίες" value={totalOrders} />
-          <StatCard icon={<FaTag />} label="Σύνολο Αγορών" value={`${totalSpent}€`} />
-          <StatCard icon={<FaCalendarAlt />} label="Τελευταία Αγορά" value={lastOrder ? `${lastOrder.date} / ${lastOrder.total.toFixed(2)}€` : '-'} />
+          {dataLoading ? (
+            <>
+              <StatCard icon={<FaShoppingBag />} label="Παραγγελίες" value="..." />
+              <StatCard icon={<FaTag />} label="Σύνολο Αγορών" value="..." />
+              <StatCard icon={<FaCalendarAlt />} label="Τελευταία Αγορά" value="..." />
+            </>
+          ) : (
+            <>
+              <StatCard icon={<FaShoppingBag />} label="Παραγγελίες" value={totalOrders} />
+              <StatCard icon={<FaTag />} label="Σύνολο Αγορών" value={`${totalSpent}€`} />
+              <StatCard icon={<FaCalendarAlt />} label="Τελευταία Αγορά" value={lastOrder ? `${lastOrder.date} / ${lastOrder.total.toFixed(2)}€` : 'Καμία'} />
+            </>
+          )}
         </section>
 
         {/* ACTIVITY FEED */}
         <section className="dashboard-activity-feed">
           <h4>Πρόσφατη Δραστηριότητα</h4>
           <div className="activity-timeline">
-            {mockActivity.map((a, i) => <ActivityItem key={i} {...a} />)}
+            {dataLoading ? (
+              <div style={{textAlign: 'center', padding: '20px', color: '#666'}}>Φόρτωση δραστηριότητας...</div>
+            ) : activity.length === 0 ? (
+              <div style={{textAlign: 'center', padding: '20px', color: '#666'}}>Δεν υπάρχει δραστηριότητα ακόμα.</div>
+            ) : (
+              activity.map((a, i) => <ActivityItem key={i} {...a} />)
+            )}
           </div>
         </section>
-        <OrdersModal open={showOrders} onClose={() => setShowOrders(false)} orders={mockOrders} />
+        <OrdersModal open={showOrders} onClose={() => setShowOrders(false)} orders={orders} />
         <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} user={user} updateEmail={updateEmail} updatePassword={updatePassword} updateProfile={updateProfile} deleteAccount={deleteAccount} />
       </div>
     </div>

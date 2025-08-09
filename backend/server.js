@@ -6,11 +6,6 @@ const path = require('path');
 require('dotenv').config({ path: './config.env' });
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const orderRoutes = require('./routes/orders');
-const userRoutes = require('./routes/users');
-const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
@@ -52,11 +47,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Error handling middleware

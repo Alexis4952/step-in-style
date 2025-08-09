@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-
-const mockOrders = [
-  { id: 'ORD-2024-128', customer: 'Γιώργος Παπαδόπουλος', email: 'g.papadopoulos@email.com', date: '2024-06-25', total: '89.99€', status: 'Ολοκληρώθηκε', items: [ { name: 'Nike Air Max', qty: 1, price: '89.99€' } ] },
-  { id: 'ORD-2024-127', customer: 'Μαρία Ιωάννου', email: 'm.ionnou@email.com', date: '2024-06-25', total: '59.00€', status: 'Εκκρεμεί', items: [ { name: 'Adidas Superstar', qty: 2, price: '29.50€' } ] },
-  { id: 'ORD-2024-126', customer: 'Νίκος Κωνσταντίνου', email: 'n.konstantinou@email.com', date: '2024-06-24', total: '120.00€', status: 'Ολοκληρώθηκε', items: [ { name: 'Puma RS-X', qty: 1, price: '120.00€' } ] },
-  { id: 'ORD-2024-125', customer: 'Ελένη Σταμάτη', email: 'e.stamati@email.com', date: '2024-06-24', total: '45.50€', status: 'Ακυρώθηκε', items: [ { name: 'Converse All Star', qty: 1, price: '45.50€' } ] },
-  { id: 'ORD-2024-124', customer: 'Πέτρος Αντωνίου', email: 'p.antoniou@email.com', date: '2024-06-23', total: '210.00€', status: 'Σε εξέλιξη', items: [ { name: 'New Balance 574', qty: 2, price: '105.00€' } ] },
-  { id: 'ORD-2024-123', customer: 'Αναστασία Μιχαήλ', email: 'a.michail@email.com', date: '2024-06-22', total: '75.00€', status: 'Εκκρεμεί', items: [ { name: 'Vans Old Skool', qty: 1, price: '75.00€' } ] },
-];
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 
 const statusColors = {
-  'Ολοκληρώθηκε': '#4caf50',
-  'Εκκρεμεί': '#f6c77a',
-  'Σε εξέλιξη': '#2196f3',
-  'Ακυρώθηκε': '#b82a2a',
+  'completed': '#4caf50',
+  'pending': '#f6c77a',
+  'processing': '#2196f3',
+  'cancelled': '#b82a2a',
+};
+
+const statusLabels = {
+  'completed': 'Ολοκληρώθηκε',
+  'pending': 'Εκκρεμεί',
+  'processing': 'Σε εξέλιξη',
+  'cancelled': 'Ακυρώθηκε',
 };
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('Όλες');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -25,21 +25,94 @@ export default function AdminOrders() {
   const [page, setPage] = useState(1);
   const perPage = 5;
 
-  const filtered = orders.filter(o =>
-    (statusFilter === 'Όλες' || o.status === statusFilter) &&
-    (
+  // Fetch orders from database
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching orders:', error);
+        setOrders([]);
+      } else {
+        // Format orders for display
+        const formattedOrders = (data || []).map(order => ({
+          id: `ORD-${String(order.id).padStart(3, '0')}`,
+          customer: order.customer_name || 'Άγνωστος πελάτης',
+          email: order.customer_email || 'Δεν υπάρχει email',
+          date: new Date(order.created_at).toLocaleDateString('el-GR'),
+          total: `${order.total}€`,
+          status: order.status,
+          originalId: order.id,
+          items: [] // We'll add order items later if needed
+        }));
+        setOrders(formattedOrders);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtered = orders.filter(o => {
+    const statusMatch = statusFilter === 'Όλες' || 
+      (statusFilter === 'Ολοκληρώθηκε' && o.status === 'completed') ||
+      (statusFilter === 'Εκκρεμεί' && o.status === 'pending') ||
+      (statusFilter === 'Σε εξέλιξη' && o.status === 'processing') ||
+      (statusFilter === 'Ακυρώθηκε' && o.status === 'cancelled');
+    
+    const searchMatch = 
       o.customer.toLowerCase().includes(search.toLowerCase()) ||
       o.id.toLowerCase().includes(search.toLowerCase()) ||
-      o.email.toLowerCase().includes(search.toLowerCase())
-    )
-  );
+      o.email.toLowerCase().includes(search.toLowerCase());
+    
+    return statusMatch && searchMatch;
+  });
   const totalPages = Math.ceil(filtered.length / perPage);
   const paginated = filtered.slice((page-1)*perPage, page*perPage);
 
-  const handleStatusSave = (orderId) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: pendingStatus } : o));
-    setSelectedOrder(sel => sel ? { ...sel, status: pendingStatus } : sel);
-    setPendingStatus('');
+  const handleStatusSave = async (orderDisplayId) => {
+    try {
+      const order = orders.find(o => o.id === orderDisplayId);
+      if (!order) return;
+
+      // Convert Greek status to English for database
+      let englishStatus = pendingStatus;
+      if (pendingStatus === 'Ολοκληρώθηκε') englishStatus = 'completed';
+      else if (pendingStatus === 'Εκκρεμεί') englishStatus = 'pending';
+      else if (pendingStatus === 'Σε εξέλιξη') englishStatus = 'processing';
+      else if (pendingStatus === 'Ακυρώθηκε') englishStatus = 'cancelled';
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: englishStatus })
+        .eq('id', order.originalId);
+
+      if (error) {
+        console.error('Error updating order status:', error);
+        alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
+        return;
+      }
+
+      // Update local state
+      setOrders(prev => prev.map(o => o.id === orderDisplayId ? { ...o, status: englishStatus } : o));
+      setSelectedOrder(sel => sel ? { ...sel, status: englishStatus } : sel);
+      setPendingStatus('');
+      
+      alert('Η κατάσταση ενημερώθηκε επιτυχώς!');
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
+    }
   };
 
   return (
@@ -79,7 +152,9 @@ export default function AdminOrders() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              <tr><td colSpan={7} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Φόρτωση παραγγελιών...</td></tr>
+            ) : filtered.length === 0 ? (
               <tr><td colSpan={7} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Δεν βρέθηκαν παραγγελίες.</td></tr>
             ) : paginated.map((o,i) => (
               <tr key={i} style={{borderBottom:'1px solid #f6c77a',background:i%2?'#fff':'#fff6ec'}}>
@@ -89,7 +164,7 @@ export default function AdminOrders() {
                 <td style={{padding:'14px 0'}}>{o.date}</td>
                 <td style={{padding:'14px 0'}}>{o.total}</td>
                 <td style={{padding:'14px 0'}}>
-                  <span style={{background:statusColors[o.status],color:'#fff',borderRadius:8,padding:'6px 14px',fontWeight:700,fontSize:15}}>{o.status}</span>
+                  <span style={{background:statusColors[o.status],color:'#fff',borderRadius:8,padding:'6px 14px',fontWeight:700,fontSize:15}}>{statusLabels[o.status]}</span>
                 </td>
                 <td style={{padding:'14px 0',textAlign:'center'}}>
                   <button onClick={()=>setSelectedOrder(o)} style={{background:'#b87b2a',color:'#fff',border:'none',borderRadius:10,padding:'8px 18px',fontWeight:700,fontSize:15,cursor:'pointer'}}>Προβολή</button>
@@ -121,11 +196,15 @@ export default function AdminOrders() {
             <div style={{marginBottom:10}}><b>Σύνολο:</b> {selectedOrder.total}</div>
             <div style={{marginBottom:10}}><b>Κατάσταση:</b>
               <>
-                <select value={pendingStatus || selectedOrder.status} onChange={e=>setPendingStatus(e.target.value)} style={{padding:'8px 14px',borderRadius:8,border:'1.5px solid #f6c77a',fontSize:16,fontWeight:700,marginLeft:8}}>
-                  <option>Ολοκληρώθηκε</option>
-                  <option>Εκκρεμεί</option>
-                  <option>Σε εξέλιξη</option>
-                  <option>Ακυρώθηκε</option>
+                <select 
+                  value={pendingStatus || statusLabels[selectedOrder.status]} 
+                  onChange={e=>setPendingStatus(e.target.value)} 
+                  style={{padding:'8px 14px',borderRadius:8,border:'1.5px solid #f6c77a',fontSize:16,fontWeight:700,marginLeft:8}}
+                >
+                  <option value="Ολοκληρώθηκε">Ολοκληρώθηκε</option>
+                  <option value="Εκκρεμεί">Εκκρεμεί</option>
+                  <option value="Σε εξέλιξη">Σε εξέλιξη</option>
+                  <option value="Ακυρώθηκε">Ακυρώθηκε</option>
                 </select>
                 <button onClick={()=>handleStatusSave(selectedOrder.id)} style={{marginLeft:10,background:'#4caf50',color:'#fff',border:'none',borderRadius:8,padding:'7px 16px',fontWeight:700,fontSize:15,cursor:'pointer'}}>Αποθήκευση</button>
               </>

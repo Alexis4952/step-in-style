@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import './App.css';
-// import logo from './logo.svg';
+
 
 export default function LoginPage() {
   const { login, signInWithGoogle, loading, error, user } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useSearchParams } from 'react-router-dom';
 import { FaUserCircle, FaShoppingCart, FaHeart, FaRegHeart, FaFacebook, FaInstagram, FaTag } from 'react-icons/fa';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -78,7 +78,9 @@ function Hero() {
         <div className="Hero-content">
           <h1 style={{textTransform: 'uppercase'}}>ΠΕΡΠΑΤΑ ΜΕ ΑΥΤΟΠΕΠΟΙΘΗΣΗ.</h1>
           <p>Step in Style – κάθε βήμα, μια ιστορία.</p>
-          <Link to="/products"><button className="premium-btn">Ανακάλυψε τη συλλογή</button></Link>
+          <Link to="/products">
+            <button className="premium-btn">Ανακάλυψε τη συλλογή</button>
+          </Link>
         </div>
       </div>
     </section>
@@ -88,7 +90,7 @@ function Hero() {
 export function ProductCardWithLogo({ product }) {
   const { addToCart } = useCart();
   // DEBUG: Δείξε τα πεδία του προϊόντος στην κάρτα
-  console.log('ProductCardWithLogo:', product);
+
   return (
     <Link to={`/product/${product.id}`} style={{textDecoration:'none'}}>
     <div className="premium-card" style={{margin: 16, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
@@ -135,8 +137,10 @@ function OffersCarousel() {
 }
 
 function FloatingCart() {
-  const { cart, total, removeFromCart, updateQty } = useCart();
+  const { cart, total, removeFromCart, updateQty, handleCheckout } = useCart();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   return (
     <>
       <button className="FloatingCart" onClick={() => setOpen(o => !o)} aria-label="Άνοιγμα καλαθιού">
@@ -173,7 +177,30 @@ function FloatingCart() {
                   ))}
                 </ul>
                 <div className="cart-total">Σύνολο: <b>{total.toFixed(2)}€</b></div>
-                <button className="cart-checkout-btn">Ολοκλήρωση Αγοράς</button>
+                {message && (
+                  <div className={`cart-message ${message.includes('επιτυχώς') ? 'success' : 'error'}`}>
+                    {message}
+                  </div>
+                )}
+                <button 
+                  className="cart-checkout-btn" 
+                  onClick={async () => {
+                    setLoading(true);
+                    setMessage('');
+                    const result = await handleCheckout();
+                    setMessage(result.message);
+                    setLoading(false);
+                    if (result.success) {
+                      setTimeout(() => {
+                        setOpen(false);
+                        setMessage('');
+                      }, 2000);
+                    }
+                  }}
+                  disabled={loading || cart.length === 0}
+                >
+                  {loading ? 'Επεξεργασία...' : 'Ολοκλήρωση Αγοράς'}
+                </button>
               </>
             )}
           </div>
@@ -190,7 +217,13 @@ function ProductImage({ src, alt }) {
       <img src={logoMain} alt="logo" className="logo-fallback-img" />
     </div>
   ) : (
-    <img src={src} alt={alt} className="premium-image" onError={() => setError(true)} />
+    <img 
+      src={src} 
+      alt={alt} 
+      className="premium-image" 
+      loading="lazy"
+      onError={() => setError(true)} 
+    />
   );
 }
 
@@ -216,7 +249,7 @@ function ProductDetails({ product }) {
         <div className="sidebar-suggested-list">
           {suggestedProducts.map(p => (
             <Link to={`/product/${p.id}`} key={p.id} className="sidebar-suggested-card">
-              <img src={p.image} alt={p.name} className="sidebar-suggested-img" />
+              <img src={p.image} alt={p.name} className="sidebar-suggested-img" loading="lazy" />
               <div className="sidebar-suggested-info">
                 <div className="sidebar-suggested-name">{p.name}</div>
                 <div className="sidebar-suggested-price">{p.price}{p.oldPrice && <span className="sidebar-suggested-old">{p.oldPrice}</span>}</div>
@@ -230,10 +263,10 @@ function ProductDetails({ product }) {
         <div className="premium-product-maincard">
           <div className="ProductDetails premium-product-details">
             <div className="ProductDetails-gallery premium-product-gallery">
-              <img src={mainImg} alt={product.name} className="ProductDetails-image premium-product-mainimg" />
+              <img src={mainImg} alt={product.name} className="ProductDetails-image premium-product-mainimg" loading="lazy" />
               <div className="ProductDetails-thumbs premium-product-thumbs">
           {product.images.map((img, i) => (
-            <img key={i} src={img} alt="thumb" className={`thumb${mainImg===img?' selected':''}`} onClick={()=>setMainImg(img)} />
+            <img key={i} src={img} alt="thumb" className={`thumb${mainImg===img?' selected':''}`} onClick={()=>setMainImg(img)} loading="lazy" />
           ))}
         </div>
       </div>
@@ -276,9 +309,9 @@ function ProductDetails({ product }) {
                 {activeTab==='returns' && <div>{product.returns}</div>}
                 {activeTab==='reviews' && <div style={{color:'#b87b2a',fontWeight:600}}>Δεν υπάρχουν ακόμα αξιολογήσεις.<br/>Γίνε ο πρώτος που θα αξιολογήσει το προϊόν!</div>}
               </div>
-              <button className="premium-product-btn" style={{marginTop:18}} onClick={()=>selectedSize && addToCart({...product, selectedSize})} disabled={!selectedSize}>Προσθήκη στο καλάθι</button>
-              {!selectedSize && <div style={{color:'#b87b2a',marginTop:8,fontWeight:600}}>Επίλεξε μέγεθος για να συνεχίσεις</div>}
-            </div>
+                              <button className="premium-product-btn" style={{marginTop:18}} onClick={()=>selectedSize && addToCart({...product, selectedSize})} disabled={!selectedSize}>Προσθήκη στο καλάθι</button>
+                {!selectedSize && <div style={{color:'#b87b2a',marginTop:8,fontWeight:600}}>Επίλεξε μέγεθος για να συνεχίσεις</div>}
+              </div>
         </div>
         </div>
       </div>
@@ -289,8 +322,11 @@ function ProductDetails({ product }) {
 function ProductsPage() {
   const { mockProducts } = useContext(ProductsContext);
   const { addToCart } = useCart();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   // DEBUG: Δείξε τα προϊόντα που φορτώνονται
-  console.log('mockProducts:', mockProducts);
+  console.log('ProductsPage - mockProducts:', mockProducts?.length || 0);
+  
   // Εύρεση min/max τιμής
   const prices = mockProducts.map(p => Number(p.price)).filter(Boolean);
   const minPrice = prices.length > 0 ? Math.min(...prices, 1) : 1;
@@ -298,32 +334,118 @@ function ProductsPage() {
   // State για τα φίλτρα
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  
   useEffect(() => {
     if (prices.length > 0) setPriceRange([minPrice, maxPrice]);
   }, [minPrice, maxPrice]);
+  
+  // Φόρτωση κατηγοριών και υποκατηγοριών από τη Supabase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        
+        // Φόρτωση κατηγοριών
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('id, name, slug, description, display_order')
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (categoriesError) {
+          console.error('Σφάλμα κατά τη φόρτωση κατηγοριών:', categoriesError);
+          setCategories([]);
+        } else {
+          setCategories(categoriesData || []);
+        }
+        
+        // Φόρτωση υποκατηγοριών
+        const { data: subcategoriesData, error: subcategoriesError } = await supabase
+          .from('subcategories')
+          .select(`
+            id, 
+            name, 
+            display_order,
+            categories!inner(id, name)
+          `)
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (subcategoriesError) {
+          console.error('Σφάλμα κατά τη φόρτωση υποκατηγοριών:', subcategoriesError);
+          setSubcategories([]);
+        } else {
+          setSubcategories(subcategoriesData || []);
+        }
+        
+      } catch (err) {
+        console.error('Σφάλμα κατά τη φόρτωση κατηγοριών:', err);
+        setCategories([]);
+        setSubcategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+  
   const [sortBy, setSortBy] = useState('newest');
   const [search, setSearch] = useState('');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [cart, setCart] = useState([]);
   const [visibleCount, setVisibleCount] = useState(4);
 
-  // Εφαρμογή φίλτρων
-  let filteredProducts = mockProducts.filter(product => {
-    // Search
-    if (search && !product.name.toLowerCase().includes(search.toLowerCase()) && !(product.sku && product.sku.toLowerCase().includes(search.toLowerCase()))) return false;
-    // Μέγεθος
-    if (selectedSizes.length > 0 && !product.sizes.some(size => selectedSizes.includes(size))) return false;
-    // Brand
-    if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) return false;
-    // Διαθεσιμότητα
-    if (availableOnly && !(product.stock > 0)) return false;
-    // Τιμή
-    const priceNum = Number(product.price);
-    if (priceNum < priceRange[0] || priceNum > priceRange[1]) return false;
-    return true;
-  });
+  // Διάβασε το search parameter από το URL
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      setSearch(searchFromUrl);
+    }
+  }, [searchParams]);
+
+      // Εφαρμογή φίλτρων
+    let filteredProducts = mockProducts.filter(product => {
+      // Search
+      if (search && !product.name.toLowerCase().includes(search.toLowerCase()) && !(product.sku && product.sku.toLowerCase().includes(search.toLowerCase()))) {
+        return false;
+      }
+      // Κατηγορία - χρήση ονομάτων κατηγοριών από τη βάση
+      if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
+        return false;
+      }
+      // Υποκατηγορία
+      if (selectedSubcategories.length > 0 && !selectedSubcategories.includes(product.subcategory)) {
+        return false;
+      }
+      // Μέγεθος
+      if (selectedSizes.length > 0 && !product.sizes.some(size => selectedSizes.includes(size))) {
+        return false;
+      }
+      // Brand
+      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) {
+        return false;
+      }
+      // Διαθεσιμότητα
+      if (availableOnly && !(product.stock > 0)) {
+        return false;
+      }
+      // Τιμή
+      const priceNum = Number(product.price);
+      if (priceNum < priceRange[0] || priceNum > priceRange[1]) {
+        return false;
+      }
+      return true;
+    });
+
+  
 
   // Ταξινόμηση
   filteredProducts = [...filteredProducts].sort((a, b) => {
@@ -340,6 +462,11 @@ function ProductsPage() {
 
   // Συλλογή όλων των brands
   const allBrands = Array.from(new Set(mockProducts.map(p => p.brand)));
+  
+  // Χρήση κατηγοριών από τη Supabase
+  const displayCategories = categories.map(cat => cat.name);
+  
+  
 
   // Προσθήκη στο καλάθι (χωρίς αλλαγή stock εδώ)
   const handleAddToCart = (product) => {
@@ -353,6 +480,21 @@ function ProductsPage() {
   };
   const handleBrandChange = brand => {
     setSelectedBrands(brands => brands.includes(brand) ? brands.filter(b => b !== brand) : [...brands, brand]);
+  };
+  const handleCategoryChange = category => {
+    // Αν η κατηγορία είναι ήδη επιλεγμένη, την αφαιρούμε
+    if (selectedCategories.includes(category)) {
+      setSelectedCategories(categories => categories.filter(c => c !== category));
+    } else {
+      // Αν επιλέγουμε νέα κατηγορία, καθαρίζουμε όλες τις προηγούμενες
+      setSelectedCategories([category]);
+    }
+    // Καθαρισμός υποκατηγοριών όταν αλλάζει κατηγορία
+    setSelectedSubcategories([]);
+  };
+  
+  const handleSubcategoryChange = subcategory => {
+    setSelectedSubcategories(subcategories => subcategories.includes(subcategory) ? subcategories.filter(s => s !== subcategory) : [...subcategories, subcategory]);
   };
   const handleAvailableChange = () => setAvailableOnly(a => !a);
   const handlePriceChange = e => setPriceRange([priceRange[0], Number(e.target.value)]);
@@ -370,35 +512,171 @@ function ProductsPage() {
       <section className="Products-section products-flex-wrapper">
         {/* Sidebar Filters */}
         <aside className="Products-sidebar products-sidebar-align-more">
-          <h3>Φίλτρα</h3>
+          <div className="sidebar-header">
+            <h3>🔍 Φίλτρα Αναζήτησης</h3>
+            <button 
+              onClick={() => {
+                setSelectedCategories([]);
+                setSelectedSubcategories([]);
+                setSelectedSizes([]);
+                setSelectedBrands([]);
+                setAvailableOnly(false);
+                setPriceRange([minPrice, maxPrice]);
+                setSearch('');
+              }}
+              className="clear-filters-btn"
+            >
+              Καθαρισμός
+            </button>
+          </div>
+          
           <div className="filter-group">
-            <div className="filter-label">Μέγεθος</div>
+            <div className="filter-label">
+              <span className="filter-icon">📂</span>
+              Κατηγορία
+            </div>
+            <select 
+              value={selectedCategories[0] || ''} 
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value) {
+                  setSelectedCategories([value]);
+                  setSelectedSubcategories([]); // Καθαρισμός υποκατηγοριών
+                } else {
+                  setSelectedCategories([]);
+                  setSelectedSubcategories([]);
+                }
+              }}
+              className="category-select"
+            >
+              <option value="">Όλες οι κατηγορίες</option>
+              {displayCategories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Υποκατηγορίες - εμφανίζονται μόνο όταν επιλέγεται "Αξεσουάρ" */}
+          {selectedCategories.includes('Αξεσουάρ') && (
+            <div className="filter-group">
+              <div className="filter-label">
+                <span className="filter-icon">🔗</span>
+                Υποκατηγορία
+              </div>
+              <select 
+                value={selectedSubcategories[0] || ''} 
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value) {
+                    setSelectedSubcategories([value]);
+                  } else {
+                    setSelectedSubcategories([]);
+                  }
+                }}
+                className="subcategory-select"
+              >
+                <option value="">Όλες οι υποκατηγορίες</option>
+                {subcategories
+                  .filter(sub => sub.categories.name === 'Αξεσουάρ')
+                  .map(subcategory => (
+                    <option key={subcategory.name} value={subcategory.name}>
+                      {subcategory.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          <div className="filter-group">
+            <div className="filter-label">
+              <span className="filter-icon">👟</span>
+              Μέγεθος
+            </div>
             <div className="filter-sizes">
               {[36,37,38,39,40,41].map(size => (
-                <button key={size} className={`filter-btn${selectedSizes.includes(String(size)) ? ' selected' : ''}`} onClick={() => handleSizeClick(String(size))}>{size}</button>
+                <button 
+                  key={size} 
+                  className={`filter-btn${selectedSizes.includes(String(size)) ? ' selected' : ''}`} 
+                  onClick={() => handleSizeClick(String(size))}
+                >
+                  {size}
+                </button>
               ))}
             </div>
           </div>
+
           <div className="filter-group">
-            <div className="filter-label">Brand</div>
+            <div className="filter-label">
+              <span className="filter-icon">🏷️</span>
+              Μάρκα
+            </div>
             <div className="filter-brands">
               {allBrands.map(brand => (
-                <label key={brand}><input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => handleBrandChange(brand)} /> {brand}</label>
+                <label key={brand} className="filter-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedBrands.includes(brand)} 
+                    onChange={() => handleBrandChange(brand)} 
+                  />
+                  <span className="checkmark"></span>
+                  {brand}
+                </label>
               ))}
             </div>
           </div>
+
           <div className="filter-group">
-            <div className="filter-label">Διαθεσιμότητα</div>
-            <label><input type="checkbox" checked={availableOnly} onChange={handleAvailableChange} /> Άμεσα διαθέσιμο</label>
-          </div>
-          <div className="filter-group">
-            <div className="filter-label">Τιμή</div>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <input type="number" min={minPrice} max={priceRange[1]} value={priceRange[0]} onChange={handlePriceMinChange} style={{width:50}} />
-              <span>-</span>
-              <input type="number" min={priceRange[0]} max={maxPrice} value={priceRange[1]} onChange={handlePriceChange} style={{width:50}} />
+            <div className="filter-label">
+              <span className="filter-icon">📦</span>
+              Διαθεσιμότητα
             </div>
-            <input type="range" min={minPrice} max={maxPrice} value={priceRange[1]} onChange={handlePriceChange} />
+            <label className="filter-checkbox">
+              <input 
+                type="checkbox" 
+                checked={availableOnly} 
+                onChange={handleAvailableChange} 
+              />
+              <span className="checkmark"></span>
+              Άμεσα διαθέσιμο
+            </label>
+          </div>
+
+          <div className="filter-group">
+            <div className="filter-label">
+              <span className="filter-icon">💰</span>
+              Τιμή
+            </div>
+            <div className="price-range-container">
+              <div className="price-inputs">
+                <input 
+                  type="number" 
+                  min={minPrice} 
+                  max={priceRange[1]} 
+                  value={priceRange[0]} 
+                  onChange={handlePriceMinChange} 
+                  className="price-input"
+                  placeholder="Min"
+                />
+                <span className="price-separator">-</span>
+                <input 
+                  type="number" 
+                  min={priceRange[0]} 
+                  max={maxPrice} 
+                  value={priceRange[1]} 
+                  onChange={handlePriceChange} 
+                  className="price-input"
+                  placeholder="Max"
+                />
+              </div>
+              <input 
+                type="range" 
+                min={minPrice} 
+                max={maxPrice} 
+                value={priceRange[1]} 
+                onChange={handlePriceChange} 
+                className="price-slider"
+              />
+            </div>
           </div>
         </aside>
         {/* Products Grid */}
@@ -519,12 +797,14 @@ function MainApp({ offers, mockProducts, loading }) {
   const location = useLocation();
   // Εμφανίζω loading μόνο σε routes που χρειάζονται προϊόντα, ΠΟΤΕ σε /login ή /register
   const isAuthPage = location.pathname.startsWith('/login') || location.pathname.startsWith('/register');
+  const isAdminPage = location.pathname.startsWith('/admin');
   const needsProducts = ["/", "/products"].includes(location.pathname) || location.pathname.startsWith("/product");
-  if (loading && needsProducts && !isAuthPage) {
+  
+  // Βελτιστοποίηση: Εμφάνιση loading μόνο αν χρειάζεται και δεν έχουμε φορτώσει ακόμα
+  if (loading && needsProducts && !isAuthPage && !isAdminPage) {
     return (
       <CartProvider>
         <ProductsContext.Provider value={{ offers, mockProducts, loading }}>
-          {/* Εμφάνιση Navbar και Footer ΜΟΝΟ αν δεν είμαστε σε admin route */}
           {!location.pathname.startsWith('/admin') && <Navbar hideLogo={location.pathname.startsWith('/account')} />}
           <div style={{ 
             display: 'flex', 
@@ -535,7 +815,18 @@ function MainApp({ offers, mockProducts, loading }) {
             color: '#b87b2a',
             fontFamily: 'Montserrat'
           }}>
-            Φόρτωση προϊόντων...
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ marginBottom: '20px' }}>Φόρτωση προϊόντων...</div>
+              <div style={{ 
+                width: '40px', 
+                height: '40px', 
+                border: '3px solid #f3f3f3', 
+                borderTop: '3px solid #b87b2a', 
+                borderRadius: '50%', 
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto'
+              }}></div>
+            </div>
           </div>
           {!location.pathname.startsWith('/admin') && <Footer />}
         </ProductsContext.Provider>
@@ -677,6 +968,8 @@ function NewProductsCarousel({ products }) {
 }
 
 function CarouselsByTag({ mockProducts }) {
+  console.log('CarouselsByTag - mockProducts:', mockProducts?.length || 0);
+  
   const offers = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('offer'));
   const popular = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('popular'));
   const newest = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('new'));
@@ -695,58 +988,88 @@ function App() {
   const [offers, setOffers] = useState([]);
   const [mockProducts, setMockProducts] = useState(defaultMockProducts);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Fetch all products
+        
+        // Test query πρώτα
+        console.log('Ξεκινάει η φόρτωση προϊόντων...');
+        
+        // Βελτιστοποίηση: Φόρτωσε μόνο τα απαραίτητα πεδία για την αρχική σελίδα
         const { data: products, error } = await supabase
           .from('products')
           .select('*')
-          .order('id', { ascending: false });
-        if (error || !products || products.length === 0) {
+          .limit(5); // Πρώτα δοκίμασε με λίγα προϊόντα
+        
+        if (error) {
+          console.error('Σφάλμα από Supabase:', error);
           setMockProducts(defaultMockProducts);
           setOffers([]);
           setLoading(false);
+          setInitialLoadComplete(true);
           return;
         }
+        
+        if (!products || products.length === 0) {
+          console.log('Δεν βρέθηκαν προϊόντα στη βάση δεδομένων');
+          setMockProducts(defaultMockProducts);
+          setOffers([]);
+          setLoading(false);
+          setInitialLoadComplete(true);
+          return;
+        }
+        
+        console.log('Φορτώθηκαν προϊόντα:', products.length);
+        
         // Transform products to match our format
         const transformedProducts = products.map(product => {
-          console.log('fetchProducts mapping:', product);
+          console.log('Transform product:', product.id, product.name);
           return {
             id: product.id,
             name: product.name,
-            price: Number(product.price), // αριθμός για υπολογισμούς
-            priceDisplay: `${product.price}€`, // για εμφάνιση
+            price: Number(product.price),
+            priceDisplay: `${product.price}€`,
             oldPrice: product.old_price !== null && product.old_price !== undefined && product.old_price !== '' ? Number(product.old_price) : null,
             oldPriceDisplay: product.old_price !== null && product.old_price !== undefined && product.old_price !== '' ? `${product.old_price}€` : null,
             image: product.image_url,
-            brand: product.brand,
+            brand: product.brand || 'Step in Style',
+            category: product.category || 'Παπούτσια',
+            subcategory: product.subcategory || '',
             sizes: product.sizes ? product.sizes.split(',').map(s => s.trim()) : ['36', '37', '38', '39', '40', '41'],
-            sku: product.sku,
-            material: product.material,
-            available: product.available,
-            description: product.description,
-            care: product.care_instructions,
+            sku: product.sku || '',
+            material: product.material || '',
+            color: product.color || 'Λευκό',
+            available: product.available !== false, // Default true αν δεν υπάρχει
+            description: product.description || '',
+            care: product.care_instructions || 'Φρόντισε το προϊόν σου με φροντίδα.',
             returns: 'Δωρεάν επιστροφή εντός 14 ημερών.',
             rating: product.rating || 4.5,
-            images: product.images ? product.images.split(',').map(img => img.trim()) : [product.image_url],
-            stock: product.stock || 0, // Add stock field
-            carousels: Array.isArray(product.carousels) ? product.carousels : [] // Add carousels field
+            images: [product.image_url], // Μόνο η κύρια εικόνα για αρχική σελίδα
+            stock: product.total_stock || product.stock || 0,
+            hasStock: (product.total_stock || product.stock || 0) > 0,
+            carousels: Array.isArray(product.carousels) ? product.carousels : []
           };
         });
+        
         setMockProducts(transformedProducts);
-        // Set offers (products with old_price)
         const offerProducts = transformedProducts.filter(p => p.oldPrice);
         setOffers(offerProducts);
+        setInitialLoadComplete(true);
+        
+        console.log('Τέλος φόρτωσης - transformedProducts:', transformedProducts.length);
+        console.log('Offers:', offerProducts.length);
       } catch (error) {
+        console.error('Σφάλμα φόρτωσης προϊόντων:', error);
         setMockProducts(defaultMockProducts);
         setOffers([]);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchProducts();
   }, []);
 

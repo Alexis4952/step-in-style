@@ -34,11 +34,34 @@ export function AuthProvider({ children }) {
   const register = async (email, password, user_metadata = {}) => {
     setLoading(true);
     setError(null);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: user_metadata }
     });
+    
+    // If registration successful, add to user_profiles table
+    if (data.user && !error) {
+      try {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: data.user.id,
+            email: data.user.email,
+            full_name: user_metadata.full_name || 'Νέος Χρήστης',
+            phone: user_metadata.phone || null
+          });
+        
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Don't fail registration if profile creation fails
+        }
+      } catch (profileError) {
+        console.error('Error creating user profile:', profileError);
+      }
+    }
+    
     setLoading(false);
     if (error) setError(error.message);
     return { data, error };
