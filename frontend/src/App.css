@@ -10,20 +10,6 @@ body, html, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  width: 100%;
-  overflow-x: hidden; /* Prevent horizontal scroll */
-}
-
-/* Base mobile optimization */
-* {
-  box-sizing: border-box;
-}
-
-@media (max-width: 768px) {
-  body {
-    -webkit-text-size-adjust: 100%; /* Prevent zoom on iOS */
-    -ms-text-size-adjust: 100%;
-  }
 }
 
 
@@ -147,44 +133,34 @@ body {
     font-size: 16px !important;
   }
   
-  /* Hero Section Mobile */
-  .Premium-hero {
-    padding: 20px 16px !important;
-    min-height: 60vh !important;
-  }
-  
-  .hero-content h1 {
-    font-size: 1.8rem !important;
-    line-height: 1.3 !important;
-  }
-  
-  .hero-content p {
-    font-size: 1rem !important;
-    margin-bottom: 20px !important;
-  }
-  
-  .hero-cta-btn {
-    padding: 12px 24px !important;
-    font-size: 1rem !important;
-  }
+
 }
 
 @media (max-width: 480px) {
   .product-grid {
     grid-template-columns: 1fr !important;
   }
-  
-  .Premium-hero {
-    padding: 16px 12px !important;
-    min-height: 50vh !important;
+}
+
+/* Mobile-only fixes - DO NOT affect desktop */
+@media screen and (max-width: 768px) {
+  /* Prevent text zooming on mobile */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
   
-  .hero-content h1 {
-    font-size: 1.5rem !important;
+  /* Prevent horizontal scroll on mobile only */
+  body {
+    overflow-x: hidden;
   }
   
-  .hero-content p {
-    font-size: 0.9rem !important;
+  /* Better touch targets for mobile */
+  button, a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
