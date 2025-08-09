@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showLowStock, setShowLowStock] = useState(false);
   const [showPendingOrders, setShowPendingOrders] = useState(false);
-  
+
   // State for real data
   const [stats, setStats] = useState({});
   const [recentOrders, setRecentOrders] = useState([]);
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
         <div>
           <h1 style={{color:'#b87b2a',fontWeight:900,fontSize:'2.5rem',marginBottom:8}}>Πίνακας Ελέγχου</h1>
           <div style={{fontSize:'1.1rem',color:'#7a4a1a'}}>
-            {adminSession ? <>Συνδεδεμένος ως <b>{adminSession.username}</b> ({adminSession.role})</> : 'Δεν βρέθηκε admin session.'}
+        {adminSession ? <>Συνδεδεμένος ως <b>{adminSession.username}</b> ({adminSession.role})</> : 'Δεν βρέθηκε admin session.'}
           </div>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:16}}>
@@ -257,13 +257,13 @@ export default function AdminDashboard() {
           ))
         ) : (
           statsConfig.map((s, i) => (
-            <div key={i} style={{flex:'1 1 260px',background:'#fff6ec',borderRadius:28,padding:'40px 32px',boxShadow:'0 2px 24px #b87b2a11',display:'flex',flexDirection:'column',alignItems:'center',minWidth:220,maxWidth:320}}>
-              <div style={{fontSize:48,marginBottom:12}}>{s.icon}</div>
+          <div key={i} style={{flex:'1 1 260px',background:'#fff6ec',borderRadius:28,padding:'40px 32px',boxShadow:'0 2px 24px #b87b2a11',display:'flex',flexDirection:'column',alignItems:'center',minWidth:220,maxWidth:320}}>
+            <div style={{fontSize:48,marginBottom:12}}>{s.icon}</div>
               <div style={{fontWeight:900,fontSize:32,color:s.color,marginBottom:6}}>
                 {stats[s.key]}{s.suffix || ''}
               </div>
-              <div style={{fontWeight:700,fontSize:18,color:'#7a4a1a'}}>{s.label}</div>
-            </div>
+            <div style={{fontWeight:700,fontSize:18,color:'#7a4a1a'}}>{s.label}</div>
+          </div>
           ))
         )}
       </div>
@@ -317,41 +317,41 @@ export default function AdminDashboard() {
             ))
           ) : (
             revenueData.map((d,i)=>(
-              <div key={i} style={{flex:'1 1 0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',zIndex:2}}>
-                <div
-                  style={{
+            <div key={i} style={{flex:'1 1 0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',zIndex:2}}>
+              <div
+                style={{
                     height:`${maxRevenue > 0 ? Math.round((d.value/maxRevenue)*200) : 0}px`,
-                    width:54,
-                    background:barColors[i%barColors.length],
-                    borderRadius:16,
-                    boxShadow:'0 2px 16px #b87b2a22',
-                    display:'flex',alignItems:'flex-end',justifyContent:'center',
-                    position:'relative',
-                    transition:'height 0.3s',
-                    cursor:'pointer',
-                  }}
-                  title={`${d.value}€`}
-                >
-                  <span style={{
-                    fontWeight:900,
-                    fontSize:20,
-                    color:'#fff',
-                    marginBottom:14,
-                    textShadow:'0 2px 8px #b87b2a55',
-                    background:'rgba(184,123,42,0.92)',
-                    borderRadius:10,
-                    padding:'4px 16px',
-                    opacity:0.98,
-                    position:'absolute',
-                    left:'50%',
-                    transform:'translateX(-50%)',
-                    top:-40,
-                    pointerEvents:'none',
-                    transition:'opacity 0.2s',
-                  }}>{d.value}€</span>
-                </div>
-                <span style={{marginTop:18,fontSize:18,color:'#7a4a1a',fontWeight:900,letterSpacing:1}}>{d.month}</span>
+                  width:54,
+                  background:barColors[i%barColors.length],
+                  borderRadius:16,
+                  boxShadow:'0 2px 16px #b87b2a22',
+                  display:'flex',alignItems:'flex-end',justifyContent:'center',
+                  position:'relative',
+                  transition:'height 0.3s',
+                  cursor:'pointer',
+                }}
+                title={`${d.value}€`}
+              >
+                <span style={{
+                  fontWeight:900,
+                  fontSize:20,
+                  color:'#fff',
+                  marginBottom:14,
+                  textShadow:'0 2px 8px #b87b2a55',
+                  background:'rgba(184,123,42,0.92)',
+                  borderRadius:10,
+                  padding:'4px 16px',
+                  opacity:0.98,
+                  position:'absolute',
+                  left:'50%',
+                  transform:'translateX(-50%)',
+                  top:-40,
+                  pointerEvents:'none',
+                  transition:'opacity 0.2s',
+                }}>{d.value}€</span>
               </div>
+              <span style={{marginTop:18,fontSize:18,color:'#7a4a1a',fontWeight:900,letterSpacing:1}}>{d.month}</span>
+            </div>
             ))
           )}
         </div>
@@ -364,28 +364,28 @@ export default function AdminDashboard() {
         ) : recentOrders.length === 0 ? (
           <div style={{textAlign:'center',padding:'40px 0',color:'#7a4a1a'}}>Δεν υπάρχουν παραγγελίες ακόμα.</div>
         ) : (
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:16}}>
-            <thead>
-              <tr style={{color:'#b87b2a',fontWeight:700}}>
-                <th style={{textAlign:'left',padding:'8px 0'}}>ID</th>
-                <th style={{textAlign:'left',padding:'8px 0'}}>Πελάτης</th>
-                <th style={{textAlign:'left',padding:'8px 0'}}>Ημερομηνία</th>
-                <th style={{textAlign:'left',padding:'8px 0'}}>Σύνολο</th>
-                <th style={{textAlign:'left',padding:'8px 0'}}>Κατάσταση</th>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:16}}>
+          <thead>
+            <tr style={{color:'#b87b2a',fontWeight:700}}>
+              <th style={{textAlign:'left',padding:'8px 0'}}>ID</th>
+              <th style={{textAlign:'left',padding:'8px 0'}}>Πελάτης</th>
+              <th style={{textAlign:'left',padding:'8px 0'}}>Ημερομηνία</th>
+              <th style={{textAlign:'left',padding:'8px 0'}}>Σύνολο</th>
+              <th style={{textAlign:'left',padding:'8px 0'}}>Κατάσταση</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recentOrders.map((o,i) => (
+              <tr key={i} style={{borderBottom:'1px solid #f6c77a',cursor:'pointer'}} onClick={()=>setSelectedOrder(o)}>
+                <td style={{padding:'8px 0'}}>{o.id}</td>
+                <td style={{padding:'8px 0'}}>{o.customer}</td>
+                <td style={{padding:'8px 0'}}>{o.date}</td>
+                <td style={{padding:'8px 0'}}>{o.total}</td>
+                <td style={{padding:'8px 0'}}>{o.status}</td>
               </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((o,i) => (
-                <tr key={i} style={{borderBottom:'1px solid #f6c77a',cursor:'pointer'}} onClick={()=>setSelectedOrder(o)}>
-                  <td style={{padding:'8px 0'}}>{o.id}</td>
-                  <td style={{padding:'8px 0'}}>{o.customer}</td>
-                  <td style={{padding:'8px 0'}}>{o.date}</td>
-                  <td style={{padding:'8px 0'}}>{o.total}</td>
-                  <td style={{padding:'8px 0'}}>{o.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
         )}
         {selectedOrder && (
           <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'#0008',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setSelectedOrder(null)}>
@@ -427,11 +427,11 @@ export default function AdminDashboard() {
             {lowStockProducts.length === 0 ? (
               <div style={{color:'#7a4a1a',margin:'18px 0'}}>Δεν υπάρχουν προϊόντα με χαμηλό απόθεμα.</div>
             ) : (
-              <ul style={{margin:'12px 0 0 18px',padding:0}}>
-                {lowStockProducts.map((p,i)=>(
-                  <li key={i}>{p.name} <span style={{color:'#b82a2a',fontWeight:700}}>({p.stock} τεμ.)</span></li>
-                ))}
-              </ul>
+            <ul style={{margin:'12px 0 0 18px',padding:0}}>
+              {lowStockProducts.map((p,i)=>(
+                <li key={i}>{p.name} <span style={{color:'#b82a2a',fontWeight:700}}>({p.stock} τεμ.)</span></li>
+              ))}
+            </ul>
             )}
             <button onClick={()=>setShowLowStock(false)} style={{marginTop:18,background:'#b87b2a',color:'#fff',border:'none',borderRadius:10,padding:'10px 24px',fontWeight:700,fontSize:16,cursor:'pointer'}}>Κλείσιμο</button>
           </div>

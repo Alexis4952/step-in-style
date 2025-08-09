@@ -644,6 +644,8 @@ export function MobileNewProductsCarousel({ products }) {
   );
 }
 
+
+
 // Hook για να ελέγχουμε αν είμαστε σε mobile
 export function useMobile() {
   const [mobile, setMobile] = useState(isMobile());

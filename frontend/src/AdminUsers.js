@@ -204,7 +204,7 @@ export default function AdminUsers() {
       
       setSelectedUser(updatedUser);
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? updatedUser : u));
-      setEditMode(false);
+    setEditMode(false);
       
       alert('Ο χρήστης ενημερώθηκε επιτυχώς!');
       
@@ -243,11 +243,11 @@ export default function AdminUsers() {
       }
 
       // Update local state
-      setUsers(us => us.filter(u => u.id !== selectedUser.id));
-      setShowModal(false);
-      setSelectedUser(null);
-      setConfirmDelete(false);
-      document.body.style.overflow = '';
+    setUsers(us => us.filter(u => u.id !== selectedUser.id));
+    setShowModal(false);
+    setSelectedUser(null);
+    setConfirmDelete(false);
+    document.body.style.overflow = '';
       
       alert('Ο χρήστης διαγράφηκε επιτυχώς!');
       

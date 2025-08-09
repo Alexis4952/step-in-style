@@ -1025,7 +1025,7 @@ function CarouselsByTag({ mockProducts }) {
   const newest = mockProducts.filter(p => Array.isArray(p.carousels) && p.carousels.includes('new'));
 
   return (
-    <div style={{paddingTop: 540, display: 'flex', flexDirection: 'column', gap: 40, minHeight: '60vh'}}>
+    <div style={{paddingTop: 80, display: 'flex', flexDirection: 'column', gap: 40, minHeight: '60vh'}}>
       <DiscountCarousel products={offers} />
       <PopularCarousel products={popular} />
       <NewProductsCarousel products={newest} />

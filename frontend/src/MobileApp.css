@@ -253,7 +253,7 @@
   }
   
   .hero-3-categories-wrapper {
-    padding: 15px 0 20px 0 !important; /* Μικρότερο padding για λιγότερο χώρο */
+    padding: 15px 0 30px 0 !important; /* Περισσότερο padding κάτω για καλύτερο spacing */
     background: #fff !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -374,9 +374,9 @@
   
   /* 🎠 MOBILE CAROUSELS - Same style as Hero */
   .mobile-carousels-container {
-    margin-top: -180px !important; /* Λίγο πιο κάτω για καλύτερο spacing */
+    margin-top: 0 !important; /* Κανονικό spacing χωρίς overlap */
     background: #fff !important;
-    padding-top: 10px !important;
+    padding-top: 20px !important;
     position: relative !important;
     z-index: 1 !important;
   }
@@ -389,7 +389,7 @@
   }
   
   .mobile-carousel-section:first-child {
-    padding-top: 5px !important; /* Λίγο padding στο πρώτο */
+    padding-top: 15px !important; /* Περισσότερο padding στο πρώτο για καλύτερη ορατότητα */
     padding-bottom: 8px !important;
     margin: 0px !important;
     border-top: none !important;
@@ -1635,4 +1635,11 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
+}
+
+/* Mobile Carousels Container */
+.mobile-carousels-container {
+  padding: 20px 0;
+  margin-top: 20px;
+  background: #f8f6f3;
 }
