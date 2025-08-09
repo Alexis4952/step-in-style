@@ -12,6 +12,19 @@ body, html, #root {
   padding: 0;
 }
 
+/* Default desktop zoom for better viewing */
+@media (min-width: 1200px) {
+  body {
+    zoom: 0.9; /* 90% zoom για μεγάλες οθόνες */
+  }
+}
+
+@media (min-width: 1600px) {
+  body {
+    zoom: 0.85; /* 85% zoom για πολύ μεγάλες οθόνες */
+  }
+}
+
 body {
   font-family: 'Montserrat', Arial, sans-serif;
   background: #f8f6f3;
