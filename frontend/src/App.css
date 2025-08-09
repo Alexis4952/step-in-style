@@ -117,20 +117,38 @@ body {
   
   .product-grid {
     grid-template-columns: 1fr 1fr !important;
-    gap: 16px !important;
+    gap: 12px !important;
     padding: 16px !important;
+    margin: 0 !important;
   }
   
   .product-card {
-    padding: 12px !important;
+    padding: 10px !important;
+    margin: 0 !important;
   }
   
   .product-card h3 {
-    font-size: 14px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 8px !important;
   }
   
   .product-card .price {
-    font-size: 16px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  
+  .product-card img {
+    height: 120px !important;
+    object-fit: cover !important;
+  }
+  
+  /* Product section title */
+  .products-section h2 {
+    font-size: 1.4rem !important;
+    text-align: center !important;
+    margin: 20px 0 !important;
+    padding: 0 16px !important;
   }
   
 
@@ -139,6 +157,42 @@ body {
 @media (max-width: 480px) {
   .product-grid {
     grid-template-columns: 1fr !important;
+  }
+  
+  /* Extra small screens - even smaller hero */
+  .Premium-hero {
+    min-height: 60vh !important;
+    padding: 16px 12px !important;
+  }
+  
+  .hero-content h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .hero-content p {
+    font-size: 0.9rem !important;
+  }
+  
+  .hero-cta-btn {
+    padding: 12px 24px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Smaller navbar for tiny screens */
+  .App-navbar {
+    padding: 8px 12px !important;
+  }
+  
+  .Navbar-logo {
+    width: 30px !important;
+    height: 30px !important;
+    margin-right: 10px !important;
+  }
+  
+  .Brand-title {
+    font-size: 0.9rem !important;
+    letter-spacing: 0.5px !important;
   }
 }
 
@@ -161,6 +215,40 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+  
+  /* Hero Section Mobile - Smaller and fits screen */
+  .Premium-hero {
+    min-height: 70vh !important;
+    padding: 20px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .hero-content {
+    text-align: center !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+  }
+  
+  .hero-content h1 {
+    font-size: 1.8rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .hero-content p {
+    font-size: 1rem !important;
+    margin-bottom: 24px !important;
+    line-height: 1.4 !important;
+  }
+  
+  .hero-cta-btn {
+    padding: 14px 28px !important;
+    font-size: 1rem !important;
+    width: auto !important;
+    display: inline-block !important;
   }
 }
 
