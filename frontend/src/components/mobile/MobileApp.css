@@ -482,6 +482,17 @@
     transition: all 0.3s ease !important;
   }
   
+  /* Mobile badges container */
+  .mobile-badges-container {
+    position: absolute !important;
+    top: -8px !important;
+    right: -8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    align-items: flex-end !important;
+  }
+  
   .mobile-carousel-product-info {
     padding: 0 !important;
   }
@@ -1418,6 +1429,7 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
     box-sizing: border-box !important;
   }
   
+@media (max-width: 768px) {
   .premium-card {
     background: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: blur(20px) !important;
@@ -1434,7 +1446,6 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
     position: relative !important;
     overflow: hidden !important;
   }
-  
   .premium-card::before {
     content: '' !important;
     position: absolute !important;
@@ -1539,12 +1550,14 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
     left: 100% !important;
   }
   
-  .premium-product-btn:hover {
+    .premium-product-btn:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 25px rgba(184, 123, 42, 0.6) !important;
   }
-  
-  /* 🌈 RAINBOW MOBILE MENU */
+}
+
+/* 🌈 RAINBOW MOBILE MENU */
+@media (max-width: 768px) {
   .mobile-menu {
     background: rgba(0, 0, 0, 0.9) !important;
     backdrop-filter: blur(30px) !important;
@@ -1618,8 +1631,9 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
 }
 
 /* Mobile Carousels Container */
-.mobile-carousels-container {
-  padding: 20px 0;
-  margin-top: 20px;
-  background: #f8f6f3;
+  .mobile-carousels-container {
+    padding: 20px 0;
+    margin-top: 20px;
+    background: #f8f6f3;
+  }
 }

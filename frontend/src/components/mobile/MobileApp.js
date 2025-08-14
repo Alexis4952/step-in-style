@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import './MobileApp.css';
-import { supabase } from './supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { Link } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { useCart } from './CartContext';
-import { ProductsContext } from './App';
+import { useAuth } from '../AuthContext';
+import { useCart } from '../../CartContext';
+// import { ProductsContext } from '../desktop/App';
 
 // Detect if it's mobile
 export const isMobile = () => {
@@ -187,7 +187,8 @@ const heroVersion = 3; // ΑΛΛΑΞΕ ΑΥΤΟΝ ΤΟΝ ΑΡΙΘΜΟ (1-10)
 
 export function MobileHero() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { mockProducts } = useContext(ProductsContext);
+  // const { mockProducts } = useContext(ProductsContext);
+  const mockProducts = []; // Temporary empty array
   
   if (heroVersion === 1) {
     // 🏗️ HERO #1: Modern Card Stack με parallax effect

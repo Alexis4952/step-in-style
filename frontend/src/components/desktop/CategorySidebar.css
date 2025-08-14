@@ -1,0 +1,229 @@
+.category-sidebar {
+  background: #fff6ec;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(184, 123, 42, 0.1);
+  border: 1.5px solid #e5d6c7;
+  margin-bottom: 24px;
+  min-width: 280px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5d6c7;
+}
+
+.sidebar-header h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2d1c0b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-count {
+  background: #b87b2a;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #e5d6c7;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 123, 42, 0.15);
+  border-color: #b87b2a;
+}
+
+.category-item.selected {
+  background: linear-gradient(135deg, #b87b2a, #d4a574);
+  border-color: #b87b2a;
+  color: white;
+}
+
+.category-item.selected .category-name {
+  color: white;
+}
+
+.category-item.selected .category-description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.category-item.selected .category-arrow {
+  color: white;
+  transform: translateX(4px);
+}
+
+.category-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.category-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #2d1c0b;
+  transition: color 0.3s ease;
+}
+
+.category-description {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  color: #7a4a1a;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.category-arrow {
+  font-size: 18px;
+  color: #b87b2a;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-left: 12px;
+}
+
+.loading-categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5d6c7;
+  border-top: 3px solid #b87b2a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-categories p {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  color: #7a4a1a;
+  margin: 0;
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.error-message p {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  color: #b82a2a;
+  margin: 0;
+}
+
+.retry-btn {
+  background: #b87b2a;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #a06a1f;
+  transform: translateY(-1px);
+}
+
+.no-categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.no-categories p {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  color: #7a4a1a;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .category-sidebar {
+    min-width: auto;
+    margin-bottom: 16px;
+  }
+  
+  .category-item {
+    padding: 14px 16px;
+  }
+  
+  .category-name {
+    font-size: 15px;
+  }
+  
+  .category-description {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-sidebar {
+    padding: 16px;
+  }
+  
+  .sidebar-header h3 {
+    font-size: 16px;
+  }
+  
+  .category-item {
+    padding: 12px 14px;
+  }
+} 

@@ -1,0 +1,65 @@
+/* Clean Button Styles for Premium Product Button */
+
+.premium-product-btn {
+  background: linear-gradient(145deg, #b87b2a 0%, #9d6a24 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 12px 20px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 12px rgba(184, 123, 42, 0.3) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  width: 100% !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  outline: none !important;
+}
+
+.premium-product-btn:hover {
+  background: linear-gradient(145deg, #9d6a24 0%, #8a5d20 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(184, 123, 42, 0.4) !important;
+  text-decoration: none !important;
+}
+
+.premium-product-btn:active {
+  transform: translateY(0px) scale(0.98) !important;
+  box-shadow: 0 2px 8px rgba(184, 123, 42, 0.3) !important;
+}
+
+.premium-product-btn:focus {
+  outline: 2px solid rgba(184, 123, 42, 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+/* Premium Button (for main CTA) */
+.premium-btn {
+  background: linear-gradient(145deg, #b87b2a 0%, #9d6a24 100%) !important;
+  border: none !important;
+  border-radius: 15px !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  padding: 15px 30px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 6px 20px rgba(184, 123, 42, 0.3) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+.premium-btn:hover {
+  background: linear-gradient(145deg, #9d6a24 0%, #8a5d20 100%) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(184, 123, 42, 0.4) !important;
+  text-decoration: none !important;
+}

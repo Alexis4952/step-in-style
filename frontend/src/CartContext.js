@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { useAuth } from './AuthContext';
 import paymentService from './services/paymentService';
@@ -13,6 +13,39 @@ export function useCart() {
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const { user } = useAuth();
+
+  // Φόρτωση καλαθιού από localStorage κατά την εκκίνηση
+  useEffect(() => {
+    console.log('🛒 Loading cart from localStorage...');
+    const savedCart = localStorage.getItem('step-in-style-cart');
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        console.log('🛒 Found saved cart:', parsedCart);
+        setCart(parsedCart);
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error);
+        localStorage.removeItem('step-in-style-cart');
+      }
+    } else {
+      console.log('🛒 No saved cart found');
+    }
+  }, []);
+
+  // Αποθήκευση καλαθιού στο localStorage όταν αλλάζει
+  useEffect(() => {
+    if (cart.length > 0) {
+      console.log('🛒 Saving cart to localStorage:', cart);
+      localStorage.setItem('step-in-style-cart', JSON.stringify(cart));
+    } else if (cart.length === 0) {
+      // Μόνο αν το cart είναι άδειο και ΔΕΝ είναι η πρώτη φόρα που φορτώνει
+      const savedCart = localStorage.getItem('step-in-style-cart');
+      if (savedCart) {
+        console.log('🛒 Cart is empty, removing from localStorage');
+        localStorage.removeItem('step-in-style-cart');
+      }
+    }
+  }, [cart]);
 
   // Προσθήκη προϊόντος (αν υπάρχει, αυξάνει ποσότητα)
   const addToCart = (product) => {
@@ -34,6 +67,12 @@ export function CartProvider({ children }) {
   // Αλλαγή ποσότητας
   const updateQty = (id, qty) => {
     setCart(prev => prev.map(item => item.id === id ? { ...item, qty } : item));
+  };
+
+  // Καθάρισμα καλαθιού
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem('step-in-style-cart');
   };
 
   // Δημιουργία παραγγελίας (χωρίς πληρωμή - για test)
@@ -101,6 +140,7 @@ export function CartProvider({ children }) {
 
       // 5. Άδειασμα καλαθιού
       setCart([]);
+      localStorage.removeItem('step-in-style-cart');
 
       return {
         success: true,
@@ -164,6 +204,7 @@ export function CartProvider({ children }) {
       addToCart, 
       removeFromCart, 
       updateQty, 
+      clearCart,
       total, 
       handleCheckout, 
       handleCheckoutWithPayment,

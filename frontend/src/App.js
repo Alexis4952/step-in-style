@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useSearchParams } from 'react-router-dom';
-import { FaUserCircle, FaShoppingCart, FaHeart, FaRegHeart, FaFacebook, FaInstagram, FaTag } from 'react-icons/fa';
+import { FaUserCircle, FaShoppingCart, FaHeart, FaRegHeart, FaFacebook, FaInstagram, FaTag, FaStar, FaGift } from 'react-icons/fa';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -350,8 +350,7 @@ function ProductsPage() {
   const { addToCart } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // DEBUG: Δείξε τα προϊόντα που φορτώνονται
-  console.log('ProductsPage - mockProducts:', mockProducts?.length || 0);
+
   
   // Εύρεση min/max τιμής
   const prices = mockProducts.map(p => Number(p.price)).filter(Boolean);
@@ -428,7 +427,7 @@ function ProductsPage() {
   const [search, setSearch] = useState('');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [cart, setCart] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(4);
+  const [visibleCount, setVisibleCount] = useState(12);
 
   // Διάβασε το search parameter από το URL
   useEffect(() => {
@@ -745,9 +744,6 @@ function ProductsPage() {
           <div className="Products-grid-2cols">
             {visibleProducts.map(product => (
               <div className="premium-card" key={product.id}>
-                {/* BADGE */}
-                {product.oldPrice && <span className="product-badge offer-badge">Προσφορά</span>}
-                {!product.oldPrice && newestIds.includes(product.id) && <span className="product-badge new-badge">Νέο</span>}
                 <ProductImage src={product.image} alt={product.name} />
                 <h3>{product.name}</h3>
                 <div className="product-price">
@@ -764,7 +760,7 @@ function ProductsPage() {
           </div>
           {hasMore && (
             <div style={{display:'flex',justifyContent:'center',marginTop:32}}>
-              <button className="load-more-btn" onClick={()=>setVisibleCount(c=>c+4)}>Φόρτωσε Περισσότερα</button>
+              <button className="load-more-btn" onClick={()=>setVisibleCount(c=>c+8)}>Φόρτωσε Περισσότερα</button>
             </div>
           )}
           {/* Quick View Modal */}
@@ -935,14 +931,28 @@ function DiscountCarousel({ products }) {
   if (!products || products.length === 0) return null;
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: products.length >= 3, // Μόνο αν έχουμε 3+ προϊόντα
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: Math.min(products.length, 3), // Δείξε όσα έχουμε, μέχρι 3
     slidesToScroll: 1,
-    arrows: true,
+    arrows: products.length > 3, // Βέλη μόνο αν έχουμε περισσότερα από 3
     responsive: [
-      { breakpoint: 1100, settings: { slidesToShow: 2 } },
-      { breakpoint: 700, settings: { slidesToShow: 1 } }
+      { 
+        breakpoint: 1100, 
+        settings: { 
+          slidesToShow: Math.min(products.length, 2),
+          infinite: products.length >= 2,
+          arrows: products.length > 2
+        } 
+      },
+      { 
+        breakpoint: 700, 
+        settings: { 
+          slidesToShow: 1,
+          infinite: products.length >= 1,
+          arrows: products.length > 1
+        } 
+      }
     ]
   };
   return (
@@ -962,19 +972,35 @@ function PopularCarousel({ products }) {
   if (!products || products.length === 0) return null;
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: products.length >= 3, // Μόνο αν έχουμε 3+ προϊόντα
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: Math.min(products.length, 3), // Δείξε όσα έχουμε, μέχρι 3
     slidesToScroll: 1,
-    arrows: true,
+    arrows: products.length > 3, // Βέλη μόνο αν έχουμε περισσότερα από 3
     responsive: [
-      { breakpoint: 1100, settings: { slidesToShow: 2 } },
-      { breakpoint: 700, settings: { slidesToShow: 1 } }
+      { 
+        breakpoint: 1100, 
+        settings: { 
+          slidesToShow: Math.min(products.length, 2),
+          infinite: products.length >= 2,
+          arrows: products.length > 2
+        } 
+      },
+      { 
+        breakpoint: 700, 
+        settings: { 
+          slidesToShow: 1,
+          infinite: products.length >= 1,
+          arrows: products.length > 1
+        } 
+      }
     ]
   };
   return (
     <section className="Products-section">
-      <div className="Products-title">Δημοφιλή Προϊόντα</div>
+      <div className="Products-title" style={{color:'#b87b2a',fontWeight:900, fontSize:'2.2rem', display:'flex',alignItems:'center',gap:16,marginBottom:36}}>
+        <FaStar style={{fontSize:'2.1rem',color:'#b87b2a'}} /> Δημοφιλή Προϊόντα
+      </div>
       <Slider {...settings}>
         {products.map(product => (
           <ProductCardWithLogo product={product} key={product.id} />
@@ -987,19 +1013,35 @@ function NewProductsCarousel({ products }) {
   if (!products || products.length === 0) return null;
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: products.length >= 3, // Μόνο αν έχουμε 3+ προϊόντα
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: Math.min(products.length, 3), // Δείξε όσα έχουμε, μέχρι 3
     slidesToScroll: 1,
-    arrows: true,
+    arrows: products.length > 3, // Βέλη μόνο αν έχουμε περισσότερα από 3
     responsive: [
-      { breakpoint: 1100, settings: { slidesToShow: 2 } },
-      { breakpoint: 700, settings: { slidesToShow: 1 } }
+      { 
+        breakpoint: 1100, 
+        settings: { 
+          slidesToShow: Math.min(products.length, 2),
+          infinite: products.length >= 2,
+          arrows: products.length > 2
+        } 
+      },
+      { 
+        breakpoint: 700, 
+        settings: { 
+          slidesToShow: 1,
+          infinite: products.length >= 1,
+          arrows: products.length > 1
+        } 
+      }
     ]
   };
   return (
     <section className="Products-section">
-      <div className="Products-title">Νέα Προϊόντα</div>
+      <div className="Products-title" style={{color:'#b87b2a',fontWeight:900, fontSize:'2.2rem', display:'flex',alignItems:'center',gap:16,marginBottom:36}}>
+        <FaGift style={{fontSize:'2.1rem',color:'#b87b2a'}} /> Νέα Προϊόντα
+      </div>
       <Slider {...settings}>
         {products.map(product => (
           <ProductCardWithLogo product={product} key={product.id} />
@@ -1048,11 +1090,12 @@ function App() {
         // Test query πρώτα
         console.log('Ξεκινάει η φόρτωση προϊόντων...');
         
-        // Βελτιστοποίηση: Φόρτωσε μόνο τα απαραίτητα πεδία για την αρχική σελίδα
+        // Φόρτωση όλων των προϊόντων
         const { data: products, error } = await supabase
           .from('products')
           .select('*')
-          .limit(5); // Πρώτα δοκίμασε με λίγα προϊόντα
+          .eq('status', 'Ενεργό')
+          .order('id', { ascending: false });
         
         if (error) {
           console.error('Σφάλμα από Supabase:', error);
@@ -1076,7 +1119,7 @@ function App() {
         
         // Transform products to match our format
         const transformedProducts = products.map(product => {
-          console.log('Transform product:', product.id, product.name);
+          console.log('Transform product:', product.id, product.name, 'old_price:', product.old_price);
           return {
             id: product.id,
             name: product.name,
@@ -1100,7 +1143,18 @@ function App() {
             images: [product.image_url], // Μόνο η κύρια εικόνα για αρχική σελίδα
             stock: product.total_stock || product.stock || 0,
             hasStock: (product.total_stock || product.stock || 0) > 0,
-            carousels: Array.isArray(product.carousels) ? product.carousels : []
+            carousels: (() => {
+              if (Array.isArray(product.carousels)) {
+                return product.carousels;
+              } else if (typeof product.carousels === 'string') {
+                try {
+                  return JSON.parse(product.carousels);
+                } catch {
+                  return product.carousels.split(',').map(s => s.trim()).filter(Boolean);
+                }
+              }
+              return [];
+            })()
           };
         });
         
