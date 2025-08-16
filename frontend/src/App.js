@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useSearchParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
+import ScrollToTop from './ScrollToTop';
 import { FaUserCircle, FaShoppingCart, FaHeart, FaRegHeart, FaFacebook, FaInstagram, FaTag, FaStar, FaGift } from 'react-icons/fa';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -13,6 +14,9 @@ import { supabase } from './supabaseClient';
 import { AuthProvider, useAuth } from './AuthContext';
 import AccountDashboard from './AccountDashboard';
 import AccountSupport from './AccountSupport';
+import ContactPage from './ContactPage';
+import TermsPage from './TermsPage';
+import ReturnsPolicyPage from './ReturnsPolicyPage';
 import ProductPage from './ProductPage';
 import AdminLoginPage from './AdminLoginPage';
 // Προσθήκη imports για AdminLayout και AdminDashboard
@@ -35,6 +39,39 @@ export function Navbar({ hideLogo }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const mobile = useMobile();
+  const navigate = useNavigate();
+  
+  const handleNavigation = (path) => {
+    // Πρώτα scroll στην κορυφή
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Μετά navigate
+    setTimeout(() => {
+      navigate(path);
+      // Και ξανά scroll μετά το navigation
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
+    }, 50);
+  };
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.Navbar-avatar')) {
+        setDropdownOpen(false);
+      }
+    };
+    
+    if (dropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [dropdownOpen]);
   
   // Αν είμαστε σε mobile, χρησιμοποιούμε το MobileNavbar
   if (mobile) {
@@ -45,20 +82,17 @@ export function Navbar({ hideLogo }) {
   return (
     <nav className={`premium-navbar${hideLogo ? ' navbar-no-logo' : ''}`}>
       {!hideLogo && (
-      <Link to="/">
+      <div onClick={() => handleNavigation('/')} style={{cursor: 'pointer'}}>
         <img src={process.env.PUBLIC_URL + '/step in style.jpg'} alt="Step in Style logo" className="premium-logo" />
-      </Link>
+      </div>
       )}
       <div className="Navbar-right-card">
-        <Link to="/" className="Navbar-link">Αρχική</Link>
-        <Link to="/products" className="Navbar-link">Προϊόντα</Link>
+        <button className="Navbar-link" onClick={() => handleNavigation('/')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer'}}>Αρχική</button>
+        <button className="Navbar-link" onClick={() => handleNavigation('/products')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer'}}>Προϊόντα</button>
         <div
           className="Navbar-avatar"
-          onMouseEnter={() => setDropdownOpen(true)}
-          onMouseLeave={() => setDropdownOpen(false)}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
           tabIndex={0}
-          onFocus={() => setDropdownOpen(true)}
-          onBlur={() => setDropdownOpen(false)}
           style={{position:'relative'}}
         >
           <FaUserCircle size={28} color="#b87b2a" />
@@ -66,13 +100,13 @@ export function Navbar({ hideLogo }) {
             <div className="Navbar-avatar-dropdown">
               {user ? (
                 <>
-                  <Link to="/account" className="avatar-dropdown-btn" style={{fontWeight:600}}>Ο λογαριασμός μου</Link>
+                  <button className="avatar-dropdown-btn" style={{fontWeight:600}} onClick={() => handleNavigation('/account')}>Ο λογαριασμός μου</button>
                   <button className="avatar-dropdown-btn" onClick={logout} style={{color:'#b87b2a',fontWeight:600}}>Αποσύνδεση</button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="avatar-dropdown-btn">Σύνδεση</Link>
-                  <Link to="/register" className="avatar-dropdown-btn">Εγγραφή</Link>
+                  <button className="avatar-dropdown-btn" onClick={() => handleNavigation('/login')}>Σύνδεση</button>
+                  <button className="avatar-dropdown-btn" onClick={() => handleNavigation('/register')}>Εγγραφή</button>
                 </>
               )}
             </div>
@@ -533,7 +567,6 @@ function ProductsPage() {
 
   return (
     <div className="products-outer-wrapper">
-      <div className="products-breadcrumbs">Αρχική &gt; Προϊόντα</div>
       <div className="products-top-title">Δείτε όλα τα προϊόντα μας</div>
       <section className="Products-section products-flex-wrapper">
         
@@ -801,6 +834,25 @@ function ProductPageWrapper() {
 }
 
 function Footer() {
+  const navigate = useNavigate();
+  
+  const handleNavigation = (path) => {
+    // Πρώτα scroll στην κορυφή
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Μετά navigate
+    setTimeout(() => {
+      navigate(path);
+      // Και ξανά scroll μετά το navigation
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
+    }, 50);
+  };
   return (
     <footer className="site-footer">
       <div className="footer-content">
@@ -809,11 +861,11 @@ function Footer() {
           <div className="footer-tagline" translate="no">Step in Style</div>
         </div>
         <div className="footer-links">
-          <a href="/">Αρχική</a>
-          <a href="/products">Προϊόντα</a>
-          <a href="#">Επικοινωνία</a>
-          <a href="#">Όροι Χρήσης</a>
-          <a href="#">Πολιτική Επιστροφών</a>
+          <button onClick={() => handleNavigation('/')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Αρχική</button>
+          <button onClick={() => handleNavigation('/products')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Προϊόντα</button>
+          <button onClick={() => handleNavigation('/contact')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Επικοινωνία</button>
+          <button onClick={() => handleNavigation('/terms')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Όροι Χρήσης</button>
+          <button onClick={() => handleNavigation('/returns-policy')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Πολιτική Επιστροφών</button>
         </div>
         <div className="footer-social">
           <a href="#" aria-label="Facebook"><FaFacebook size={24} /></a>
@@ -896,6 +948,9 @@ function MainApp({ offers, mockProducts, loading }) {
           <Route path="/product" element={<ProductPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/returns-policy" element={<ReturnsPolicyPage />} />
           <Route path="/account" element={<AccountDashboard mockProducts={mockProducts} />} />
           <Route path="/account/support" element={<AccountSupport />} />
         </Routes>
@@ -1180,6 +1235,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <MainApp offers={offers} mockProducts={mockProducts} loading={loading} />
       </Router>
     </AuthProvider>

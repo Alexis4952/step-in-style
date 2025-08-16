@@ -924,13 +924,17 @@ body {
   border-radius: 12px;
   color: #b87b2a;
   font-size: 1.08rem;
-  width: 32px;
-  height: 32px;
+  width: 45px;
+  height: 40px;
   cursor: pointer;
   font-weight: bold;
   transition: background 0.18s, color 0.18s, border 0.18s, transform 0.13s;
   box-shadow: 0 2px 8px #b87b2a11;
   margin: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .cart-item-qty button:hover, .filter-btn:hover, .size-btn:hover {
   background: #f6c77a;
@@ -1612,12 +1616,12 @@ body {
   position: absolute;
   top: 48px;
   right: 0;
-  min-width: 170px;
+  min-width: 200px;
   background: #fffefb;
   border-radius: 18px;
   box-shadow: 0 8px 32px #b87b2a22;
   z-index: 200;
-  padding: 16px 0 10px 0;
+  padding: 20px 0 16px 0;
   animation: dropdownFadeIn 0.22s cubic-bezier(.23,1.01,.32,1);
   border: 1.5px solid #f6c77a44;
   align-items: stretch;
@@ -1629,16 +1633,16 @@ body {
 .avatar-dropdown-btn {
   color: #b87b2a;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.08rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  padding: 13px 28px;
+  padding: 16px 32px;
   text-align: left;
   background: none;
   border: none;
   outline: none;
   cursor: pointer;
   border-radius: 12px;
-  margin: 0 10px 6px 10px;
+  margin: 0 12px 8px 12px;
   transition: background 0.18s, color 0.18s, transform 0.13s;
   text-decoration: none;
   display: block;
@@ -1789,23 +1793,26 @@ body {
 
 .clear-filters-btn {
   background: linear-gradient(135deg, #f6c77a 0%, #e5d6c7 100%);
-  border: none;
-  border-radius: 12px;
-  padding: 8px 16px;
+  border: 2px solid #b87b2a;
+  border-radius: 16px;
+  padding: 12px 24px;
   font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  color: #7a4a1a;
+  font-weight: 700;
+  font-size: 14px;
+  color: #b87b2a;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(186, 123, 42, 0.2);
+  box-shadow: 0 4px 12px rgba(184, 123, 42, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .clear-filters-btn:hover {
-  background: linear-gradient(135deg, #b87b2a 0%, #f6c77a 100%);
+  background: linear-gradient(135deg, #b87b2a 0%, #a06d24 100%);
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(186, 123, 42, 0.3);
+  border-color: #a06d24;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(184, 123, 42, 0.4);
 }
 
 .Products-sidebar h3 {
@@ -1813,8 +1820,22 @@ body {
   font-weight: 700;
   font-size: 22px;
   color: #b87b2a;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   letter-spacing: 0.5px;
+}
+
+/* Fix για το clear button στο desktop */
+.Products-sidebar .sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.Products-sidebar .clear-filters-btn {
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
 }
 .Products-sidebar label, .Products-sidebar div[style*="fontWeight: 600"] {
   font-family: 'Montserrat', sans-serif;
@@ -2138,7 +2159,10 @@ body {
   }
   
   .clear-filters-btn {
-    align-self: flex-end;
+    align-self: stretch;
+    width: 100%;
+    margin: 16px 0 8px 0;
+    flex-shrink: 0;
   }
   
   .filter-sizes {
@@ -2291,8 +2315,8 @@ body {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.05rem;
   color: #b87b2a;
-  margin-top: 32px;
-  margin-bottom: 0;
+  margin-top: 80px;
+  margin-bottom: 16px;
   letter-spacing: 0.2px;
   font-weight: 500;
 }
