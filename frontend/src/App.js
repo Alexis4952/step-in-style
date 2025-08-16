@@ -87,8 +87,8 @@ export function Navbar({ hideLogo }) {
       </div>
       )}
       <div className="Navbar-right-card">
-        <button className="Navbar-link" onClick={() => handleNavigation('/')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer'}}>Αρχική</button>
-        <button className="Navbar-link" onClick={() => handleNavigation('/products')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer'}}>Προϊόντα</button>
+        <button className="Navbar-link" onClick={() => handleNavigation('/')}>Αρχική</button>
+        <button className="Navbar-link" onClick={() => handleNavigation('/products')}>Προϊόντα</button>
         <div
           className="Navbar-avatar"
           onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -861,11 +861,11 @@ function Footer() {
           <div className="footer-tagline" translate="no">Step in Style</div>
         </div>
         <div className="footer-links">
-          <button onClick={() => handleNavigation('/')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Αρχική</button>
-          <button onClick={() => handleNavigation('/products')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Προϊόντα</button>
-          <button onClick={() => handleNavigation('/contact')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Επικοινωνία</button>
-          <button onClick={() => handleNavigation('/terms')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Όροι Χρήσης</button>
-          <button onClick={() => handleNavigation('/returns-policy')} style={{background: 'none', border: 'none', color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit', cursor: 'pointer', textDecoration: 'none'}}>Πολιτική Επιστροφών</button>
+          <button onClick={() => handleNavigation('/')}>Αρχική</button>
+          <button onClick={() => handleNavigation('/products')}>Προϊόντα</button>
+          <button onClick={() => handleNavigation('/contact')}>Επικοινωνία</button>
+          <button onClick={() => handleNavigation('/terms')}>Όροι Χρήσης</button>
+          <button onClick={() => handleNavigation('/returns-policy')}>Πολιτική Επιστροφών</button>
         </div>
         <div className="footer-social">
           <a href="#" aria-label="Facebook"><FaFacebook size={24} /></a>
