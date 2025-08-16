@@ -55,14 +55,6 @@ export function MobileNavbar() {
         <button 
           className="mobile-menu-close"
           onClick={() => setMobileMenuOpen(false)}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            fontSize: '1.2rem',
-            fontWeight: '600',
-            zIndex: '10000'
-          }}
         >
           <div className="close-icon">
             <span></span>
@@ -541,30 +533,43 @@ export function MobileOffersCarousel({ products }) {
         <span className="mobile-carousel-hint">← Σύρε για περισσότερα →</span>
       </div>
       <div className="mobile-carousel-products">
-        {products.slice(0, 6).map(product => (
-          <div key={product.id} className="mobile-carousel-product-card">
-            <div className="mobile-carousel-product-circle">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="mobile-carousel-product-img"
-              />
-
-            </div>
-            <div className="mobile-carousel-product-info">
-              <h3>{product.name}</h3>
-              <div className="mobile-carousel-product-price">
-                {product.oldPriceDisplay && (
-                  <span className="mobile-carousel-old-price">{product.oldPriceDisplay}</span>
+        {products.slice(0, 6).map(product => {
+          // Υπολογισμός ποσοστού έκπτωσης
+          let discountPercent = null;
+          if (product.oldPrice && product.price && product.oldPrice > product.price) {
+            discountPercent = Math.round(100 * (product.oldPrice - product.price) / product.oldPrice);
+          }
+          
+          return (
+            <div key={product.id} className="mobile-carousel-product-card">
+              <div className="mobile-carousel-product-circle">
+                <img 
+                  src={product.image} 
+                  alt={product.name}
+                  className="mobile-carousel-product-img"
+                />
+                {/* Badge για έκπτωση */}
+                {discountPercent && (
+                  <div className="mobile-badges-container">
+                    <span className="mobile-product-badge">-{discountPercent}%</span>
+                  </div>
                 )}
-                <span className="mobile-carousel-new-price">{product.priceDisplay}</span>
               </div>
-              <Link to={`/product/${product.id}`} className="mobile-carousel-view-btn">
-                Προβολή
-              </Link>
+              <div className="mobile-carousel-product-info">
+                <h3>{product.name}</h3>
+                <div className="mobile-carousel-product-price">
+                  {product.oldPriceDisplay && (
+                    <span className="mobile-carousel-old-price">{product.oldPriceDisplay}</span>
+                  )}
+                  <span className="mobile-carousel-new-price">{product.priceDisplay}</span>
+                </div>
+                <Link to={`/product/${product.id}`} className="mobile-carousel-view-btn">
+                  Προβολή
+                </Link>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -578,7 +583,7 @@ export function MobilePopularCarousel({ products }) {
         <span className="mobile-carousel-hint">← Σύρε για περισσότερα →</span>
       </div>
       <div className="mobile-carousel-products">
-        {products.slice(0, 6).map(product => (
+        {products.slice(0, 6).map((product, index) => (
           <div key={product.id} className="mobile-carousel-product-card">
             <div className="mobile-carousel-product-circle">
               <img 
@@ -586,6 +591,14 @@ export function MobilePopularCarousel({ products }) {
                 alt={product.name}
                 className="mobile-carousel-product-img"
               />
+              {/* Badge για δημοφιλή */}
+              {index < 3 && (
+                <div className="mobile-badges-container">
+                  <span className="mobile-product-badge" style={{background: 'linear-gradient(135deg, #ff9500 0%, #ff8c00 100%)'}}>
+                    #{index + 1}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="mobile-carousel-product-info">
               <h3>{product.name}</h3>
@@ -614,7 +627,7 @@ export function MobileNewProductsCarousel({ products }) {
         <span className="mobile-carousel-hint">← Σύρε για περισσότερα →</span>
       </div>
       <div className="mobile-carousel-products">
-        {products.slice(0, 6).map(product => (
+        {products.slice(0, 6).map((product, index) => (
           <div key={product.id} className="mobile-carousel-product-card">
             <div className="mobile-carousel-product-circle">
               <img 
@@ -622,6 +635,14 @@ export function MobileNewProductsCarousel({ products }) {
                 alt={product.name}
                 className="mobile-carousel-product-img"
               />
+              {/* Badge για νέα προϊόντα */}
+              {index < 2 && (
+                <div className="mobile-badges-container">
+                  <span className="mobile-product-badge" style={{background: 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)'}}>
+                    ΝΕΟ
+                  </span>
+                </div>
+              )}
             </div>
             <div className="mobile-carousel-product-info">
               <h3>{product.name}</h3>

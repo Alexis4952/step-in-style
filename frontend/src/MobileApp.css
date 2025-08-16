@@ -253,10 +253,11 @@
   }
   
   .hero-3-categories-wrapper {
-    padding: 15px 0 30px 0 !important; /* Περισσότερο padding κάτω για καλύτερο spacing */
+    padding: 15px 0 15px 0 !important; /* Padding κάτω για να χωράνε τα labels */
     background: #fff !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
+    overflow-y: visible !important;
   }
   
   .hero-3-categories-wrapper::-webkit-scrollbar {
@@ -286,6 +287,7 @@
     flex-shrink: 0 !important;
     position: relative !important;
     box-shadow: 0 6px 20px rgba(184, 123, 42, 0.12) !important;
+    margin-bottom: 25px !important; /* Χώρος για τα γράμματα από κάτω */
   }
   
   .hero-3-category:hover {
@@ -332,21 +334,22 @@
   }
   
   .hero-3-category span {
-    font-size: 0.65rem !important;
-    color: #444 !important;
+    font-size: 0.7rem !important;
+    color: #2c2c2c !important;
     font-weight: 600 !important;
-    line-height: 1 !important;
+    line-height: 1.2 !important;
     display: block !important;
     position: absolute !important;
-    bottom: -22px !important;
+    bottom: -20px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     white-space: nowrap !important;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 248, 0.9) 100%) !important;
-    padding: 3px 8px !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(184, 123, 42, 0.08) !important;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08) !important;
+    text-shadow: none !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 2px 6px !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(184, 123, 42, 0.15) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
     backdrop-filter: blur(10px) !important;
   }
   
@@ -372,69 +375,79 @@
   
 
   
-  /* 🎠 MOBILE CAROUSELS - Same style as Hero */
+  /* 🎠 MOBILE CAROUSELS - Perfect για όλες τις οθόνες */
   .mobile-carousels-container {
-    margin-top: 0 !important; /* Κανονικό spacing χωρίς overlap */
+    margin-top: -10px !important; /* Ανεβάζουμε τα carousel πιο κοντά στο Hero */
     background: #fff !important;
-    padding-top: 20px !important;
+    padding-top: 8px !important; /* Λιγότερο padding από πάνω */
     position: relative !important;
     z-index: 1 !important;
   }
   
   .mobile-carousel-section {
-    padding: 8px 0 !important;
+    padding: 12px 0 18px 0 !important;
     background: #fff !important;
-    border-bottom: 1px solid rgba(184, 123, 42, 0.1) !important;
-    margin: 0px !important;
+    border-bottom: 1px solid rgba(184, 123, 42, 0.08) !important;
+    margin: 0 !important;
+    position: relative !important;
   }
   
   .mobile-carousel-section:first-child {
-    padding-top: 15px !important; /* Περισσότερο padding στο πρώτο για καλύτερη ορατότητα */
-    padding-bottom: 8px !important;
-    margin: 0px !important;
+    padding-top: 12px !important; /* Λιγότερο padding στο πρώτο carousel */
     border-top: none !important;
+  }
+  
+  .mobile-carousel-section:last-child {
+    border-bottom: none !important;
+    padding-bottom: 30px !important;
   }
   
   .mobile-carousel-header {
     text-align: center !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 15px !important;
     padding: 0 20px !important;
-  }
-  
-  .mobile-carousel-section:first-child .mobile-carousel-header {
-    margin-top: 0px !important;
-    margin-bottom: 8px !important;
+    position: relative !important;
   }
   
   .mobile-carousel-title {
-    font-size: 1.1rem !important;
+    font-size: 1.25rem !important;
     color: #2c2c2c !important;
-    font-weight: 700 !important;
-    margin-bottom: 8px !important;
+    font-weight: 800 !important;
+    margin-bottom: 6px !important;
     display: block !important;
+    letter-spacing: -0.02em !important;
   }
   
   .mobile-carousel-hint {
-    font-size: 0.7rem !important;
-    color: #999 !important;
+    font-size: 0.65rem !important;
+    color: #888 !important;
     font-weight: 500 !important;
-    background: rgba(184, 123, 42, 0.08) !important;
-    padding: 3px 10px !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(184, 123, 42, 0.15) !important;
+    background: linear-gradient(135deg, rgba(184, 123, 42, 0.06) 0%, rgba(212, 148, 31, 0.1) 100%) !important;
+    padding: 4px 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(184, 123, 42, 0.12) !important;
     display: inline-block !important;
-    animation: fadeInOut 3s ease-in-out infinite !important;
+    animation: pulseHint 4s ease-in-out infinite !important;
+    backdrop-filter: blur(5px) !important;
+    box-shadow: 0 2px 8px rgba(184, 123, 42, 0.08) !important;
+  }
+  
+  @keyframes pulseHint {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
   }
   
   .mobile-carousel-products {
     display: flex !important;
-    gap: 20px !important;
-    padding: 0 20px 15px 20px !important;
+    gap: 18px !important;
+    padding: 0 20px 8px 20px !important;
     overflow-x: auto !important;
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
     scroll-snap-type: x mandatory !important;
     scroll-behavior: smooth !important;
     scroll-padding-left: 20px !important;
+    scrollbar-width: none !important;
   }
   
   .mobile-carousel-products::-webkit-scrollbar {
@@ -444,33 +457,39 @@
   .mobile-carousel-product-card {
     text-align: center !important;
     flex-shrink: 0 !important;
-    width: 140px !important;
-    transition: all 0.3s ease !important;
+    width: 150px !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     scroll-snap-align: start !important;
-  }
-  
-  .mobile-carousel-product-card:hover {
-    transform: translateY(-5px) !important;
-  }
-  
-  .mobile-carousel-product-circle {
-    width: 120px !important;
-    height: 120px !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, rgba(184, 123, 42, 0.15) 0%, rgba(212, 148, 31, 0.2) 100%) !important;
-    border: 3px solid rgba(184, 123, 42, 0.25) !important;
-    padding: 6px !important;
-    margin: 0 auto 15px auto !important;
-    box-shadow: 0 8px 25px rgba(184, 123, 42, 0.15) !important;
-    transition: all 0.4s ease !important;
     position: relative !important;
   }
   
+  .mobile-carousel-product-card:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+  }
+  
+  .mobile-carousel-product-circle {
+    width: 130px !important;
+    height: 130px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, rgba(184, 123, 42, 0.12) 0%, rgba(212, 148, 31, 0.18) 100%) !important;
+    border: 2px solid rgba(184, 123, 42, 0.2) !important;
+    padding: 8px !important;
+    margin: 0 auto 18px auto !important;
+    box-shadow: 
+      0 8px 24px rgba(184, 123, 42, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  
   .mobile-carousel-product-card:hover .mobile-carousel-product-circle {
-    transform: scale(1.08) !important;
-    background: linear-gradient(135deg, rgba(184, 123, 42, 0.25) 0%, rgba(212, 148, 31, 0.3) 100%) !important;
-    border-color: rgba(184, 123, 42, 0.4) !important;
-    box-shadow: 0 12px 35px rgba(184, 123, 42, 0.25) !important;
+    transform: scale(1.05) !important;
+    background: linear-gradient(135deg, rgba(184, 123, 42, 0.2) 0%, rgba(212, 148, 31, 0.25) 100%) !important;
+    border-color: rgba(184, 123, 42, 0.35) !important;
+    box-shadow: 
+      0 15px 35px rgba(184, 123, 42, 0.2),
+      0 8px 20px rgba(0, 0, 0, 0.1) !important;
   }
   
   .mobile-carousel-product-img {
@@ -480,15 +499,44 @@
     object-fit: cover !important;
     border: 1px solid rgba(255, 255, 255, 0.8) !important;
     transition: all 0.3s ease !important;
+    position: relative !important;
+    z-index: 2 !important;
+  }
+  
+  .mobile-carousel-product-card:hover .mobile-carousel-product-img {
+    transform: scale(1.03) !important;
+  }
+  
+  /* Mobile badges container */
+  .mobile-badges-container {
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: flex-end !important;
+    z-index: 10 !important;
+  }
+  
+  .mobile-product-badge {
+    background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%) !important;
+    color: #fff !important;
+    font-size: 0.6rem !important;
+    font-weight: 700 !important;
+    padding: 2px 6px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3) !important;
+    letter-spacing: 0.5px !important;
   }
   
   .mobile-carousel-product-info {
-    padding: 0 !important;
+    padding: 0 8px !important;
   }
   
   .mobile-carousel-product-info h3 {
-    font-size: 0.8rem !important;
-    color: #2c2c2c !important;
+    font-size: 0.82rem !important;
+    color: #333 !important;
     font-weight: 600 !important;
     line-height: 1.3 !important;
     margin-bottom: 8px !important;
@@ -496,55 +544,78 @@
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
-    height: 2.1em !important;
+    height: 2.2em !important;
+    text-align: center !important;
+    font-family: 'Montserrat', sans-serif !important;
   }
   
   .mobile-carousel-product-price {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 3px !important;
-    margin-bottom: 10px !important;
+    gap: 2px !important;
+    margin-bottom: 12px !important;
   }
   
   .mobile-carousel-old-price {
-    font-size: 0.7rem !important;
+    font-size: 0.68rem !important;
     color: #999 !important;
     text-decoration: line-through !important;
     font-weight: 500 !important;
+    opacity: 0.8 !important;
   }
   
   .mobile-carousel-new-price {
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
     color: #b87b2a !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.2px !important;
   }
   
   .mobile-carousel-view-btn {
     background: linear-gradient(135deg, #b87b2a 0%, #d4941f 100%) !important;
     color: #fff !important;
     border: none !important;
-    padding: 6px 12px !important;
-    border-radius: 16px !important;
+    padding: 8px 16px !important;
+    border-radius: 18px !important;
     font-size: 0.7rem !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 3px 12px rgba(184, 123, 42, 0.3) !important;
-    letter-spacing: 0.3px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px rgba(184, 123, 42, 0.25) !important;
+    letter-spacing: 0.5px !important;
     text-decoration: none !important;
     display: inline-block !important;
+    text-transform: uppercase !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  
+  .mobile-carousel-view-btn::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+    transition: left 0.5s ease !important;
+  }
+  
+  .mobile-carousel-view-btn:hover::before {
+    left: 100% !important;
   }
   
   .mobile-carousel-view-btn:hover {
-    transform: translateY(-2px) !important;
+    transform: translateY(-3px) !important;
     background: linear-gradient(135deg, #a06d24 0%, #c28819 100%) !important;
-    box-shadow: 0 6px 20px rgba(184, 123, 42, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(184, 123, 42, 0.4) !important;
     color: #fff !important;
   }
   
   .mobile-carousel-view-btn:active {
-    transform: translateY(0px) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(184, 123, 42, 0.3) !important;
   }
   
   /* 🍔 MOBILE HAMBURGER MENU STYLING */
@@ -658,44 +729,53 @@
   border-left: 4px solid #b87b2a !important;
 }
 
-/* Mobile Menu Close Button */
+/* Mobile Menu Close Button - Βελτιωμένο design */
 .mobile-menu-close {
-  background: rgba(184, 123, 42, 0.1) !important;
-  border: 2px solid rgba(184, 123, 42, 0.2) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 248, 248, 0.95) 100%) !important;
+  border: 2px solid rgba(184, 123, 42, 0.15) !important;
   color: #b87b2a !important;
   cursor: pointer !important;
   border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
+  width: 44px !important;
+  height: 44px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   position: absolute !important;
-  top: 20px !important;
-  right: 20px !important;
+  top: 18px !important;
+  right: 18px !important;
   font-size: 1.2rem !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   z-index: 10000 !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(184, 123, 42, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .mobile-menu-close:hover {
-  background: rgba(184, 123, 42, 0.2) !important;
-  border-color: #b87b2a !important;
+  background: linear-gradient(135deg, rgba(184, 123, 42, 0.08) 0%, rgba(212, 148, 31, 0.12) 100%) !important;
+  border-color: rgba(184, 123, 42, 0.3) !important;
   color: #a06d24 !important;
-  transform: scale(1.1) rotate(90deg) !important;
-  box-shadow: 0 3px 12px rgba(184, 123, 42, 0.25) !important;
+  transform: scale(1.08) !important;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    0 3px 8px rgba(184, 123, 42, 0.25) !important;
 }
 
 .mobile-menu-close:active {
-  transform: scale(0.95) rotate(90deg) !important;
-  background: rgba(184, 123, 42, 0.3) !important;
+  transform: scale(0.96) !important;
+  background: linear-gradient(135deg, rgba(184, 123, 42, 0.15) 0%, rgba(212, 148, 31, 0.2) 100%) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 1px 4px rgba(184, 123, 42, 0.2) !important;
 }
 
-/* Close Icon Lines */
+/* Perfect X Icon Design - Τέλεια κεντραρισμένο X */
 .close-icon {
-  width: 18px !important;
-  height: 18px !important;
+  width: 20px !important;
+  height: 20px !important;
   position: relative !important;
   display: flex !important;
   align-items: center !important;
@@ -708,7 +788,12 @@
   height: 2px !important;
   background: #b87b2a !important;
   border-radius: 1px !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform-origin: center center !important;
+  top: 50% !important;
+  left: 50% !important;
+  margin-top: -1px !important;
+  margin-left: -8px !important;
 }
 
 .close-icon span:first-child {
@@ -719,9 +804,38 @@
   transform: rotate(-45deg) !important;
 }
 
+/* Hover effects για το X */
 .mobile-menu-close:hover .close-icon span {
-  background: #a06d24 !important;
+  background: #8b5a1f !important;
   width: 18px !important;
+  height: 2.5px !important;
+  margin-top: -1.25px !important;
+  margin-left: -9px !important;
+}
+
+.mobile-menu-close:hover .close-icon span:first-child {
+  transform: rotate(45deg) !important;
+}
+
+.mobile-menu-close:hover .close-icon span:second-child {
+  transform: rotate(-45deg) !important;
+}
+
+/* Active effects για το X */
+.mobile-menu-close:active .close-icon span {
+  width: 14px !important;
+  height: 2px !important;
+  background: #703d15 !important;
+  margin-top: -1px !important;
+  margin-left: -7px !important;
+}
+
+.mobile-menu-close:active .close-icon span:first-child {
+  transform: rotate(45deg) !important;
+}
+
+.mobile-menu-close:active .close-icon span:second-child {
+  transform: rotate(-45deg) !important;
 }
 
 /* Force white background for mobile menu specifically */
@@ -1617,9 +1731,70 @@ div[class*="mobile-menu"]:not([class*="overlay"]) {
   50% { transform: scale(1.05); }
 }
 
-/* Mobile Carousels Container */
-.mobile-carousels-container {
-  padding: 20px 0;
-  margin-top: 20px;
-  background: #f8f6f3;
+/* Mobile Carousels Container - τελικές ρυθμίσεις */
+@media screen and (max-width: 768px) {
+  .mobile-carousels-container {
+    padding: 15px 0;
+    margin-top: -5px; /* Ανεβάζουμε τα carousel πιο κοντά στο Hero */
+    background: #fff;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Εξασφάλιση ότι τα animations λειτουργούν σωστά */
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  
+  /* Smooth scrolling για όλους τους browsers */
+  .mobile-carousel-products {
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Touch gestures optimization */
+  .mobile-carousel-product-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+  
+  /* Καλύτερη responsive συμπεριφορά */
+  @media screen and (max-width: 480px) {
+    .mobile-carousel-products {
+      gap: 15px !important;
+      padding: 0 15px 8px 15px !important;
+    }
+    
+    .mobile-carousel-product-card {
+      width: 135px !important;
+    }
+    
+    .mobile-carousel-product-circle {
+      width: 115px !important;
+      height: 115px !important;
+    }
+    
+    .mobile-carousel-title {
+      font-size: 1.1rem !important;
+    }
+  }
+  
+  /* Very small screens */
+  @media screen and (max-width: 360px) {
+    .mobile-carousel-products {
+      gap: 12px !important;
+      padding: 0 12px 8px 12px !important;
+    }
+    
+    .mobile-carousel-product-card {
+      width: 125px !important;
+    }
+    
+    .mobile-carousel-product-circle {
+      width: 105px !important;
+      height: 105px !important;
+    }
+  }
 }

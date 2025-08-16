@@ -55,14 +55,6 @@ export function MobileNavbar() {
         <button 
           className="mobile-menu-close"
           onClick={() => setMobileMenuOpen(false)}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            fontSize: '1.2rem',
-            fontWeight: '600',
-            zIndex: '10000'
-          }}
         >
           <div className="close-icon">
             <span></span>
