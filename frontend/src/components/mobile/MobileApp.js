@@ -486,22 +486,47 @@ export function MobileHero() {
 export function MobileProductCard({ product }) {
   const { addToCart } = useCart();
   
+  // Υπολογισμός έκπτωσης
+  let discountPercent = null;
+  if (product.oldPrice && product.price && product.oldPrice > product.price) {
+    discountPercent = Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
+  }
+  
   return (
     <Link to={`/product/${product.id}`} style={{textDecoration:'none'}}>
-      <div className="premium-card">
-        <img src={product.image || '/step in style.jpg'} alt={product.name} />
-        <div className="premium-card-content">
-          <h3>{product.name}</h3>
-          <div className="price">{product.priceDisplay}</div>
+      <div className="mobile-product-card-new">
+        <div className="mobile-product-image-container">
+          <img src={product.image || '/step in style.jpg'} alt={product.name} />
+          {/* Badge προσφοράς */}
+          {discountPercent && (
+            <div className="mobile-discount-badge">
+              -{discountPercent}%
+            </div>
+          )}
+          {/* Γρήγορη προσθήκη στο καλάθι */}
           <button 
-            className="premium-product-btn" 
+            className="mobile-quick-add-btn"
             onClick={(e) => { 
               e.preventDefault(); 
+              e.stopPropagation();
               addToCart(product); 
             }}
           >
-            🛒 Προσθήκη
+            🛒
           </button>
+        </div>
+        <div className="mobile-product-info">
+          <h3 className="mobile-product-title">{product.name}</h3>
+          <div className="mobile-product-brand">{product.brand}</div>
+          <div className="mobile-product-price-section">
+            {product.oldPriceDisplay && (
+              <span className="mobile-old-price">{product.oldPriceDisplay}</span>
+            )}
+            <span className="mobile-current-price">{product.priceDisplay}</span>
+          </div>
+          <div className="mobile-product-actions">
+            <span className="mobile-view-details">Προβολή λεπτομερειών →</span>
+          </div>
         </div>
       </div>
     </Link>

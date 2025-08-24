@@ -7,7 +7,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', phone: '' });
+  const [editForm, setEditForm] = useState({ name: '', phone: '', role: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -43,6 +43,7 @@ export default function AdminUsers() {
           email: user.email,
           name: user.full_name || 'Δεν υπάρχει όνομα',
           phone: user.phone || 'Δεν υπάρχει',
+          role: user.role || 'customer', // Default role
           created_at: new Date(user.created_at).toLocaleDateString('el-GR'),
           active: true
         }));
@@ -165,7 +166,8 @@ export default function AdminUsers() {
   const handleEdit = () => {
     setEditForm({
       name: selectedUser.name,
-      phone: selectedUser.phone === 'Δεν υπάρχει' ? '' : selectedUser.phone
+      phone: selectedUser.phone === 'Δεν υπάρχει' ? '' : selectedUser.phone,
+      role: selectedUser.role
     });
     setEditMode(true);
   };
@@ -185,6 +187,7 @@ export default function AdminUsers() {
         .update({
           full_name: editForm.name,
           phone: editForm.phone || null,
+          role: editForm.role,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedUser.profile_id);
@@ -199,7 +202,8 @@ export default function AdminUsers() {
       const updatedUser = { 
         ...selectedUser, 
         name: editForm.name,
-        phone: editForm.phone || 'Δεν υπάρχει'
+        phone: editForm.phone || 'Δεν υπάρχει',
+        role: editForm.role
       };
       
       setSelectedUser(updatedUser);
@@ -282,20 +286,30 @@ export default function AdminUsers() {
               <th style={{padding:'14px 12px',textAlign:'left'}}>Email</th>
               <th style={{padding:'14px 12px',textAlign:'left'}}>Όνομα</th>
               <th style={{padding:'14px 12px',textAlign:'left'}}>Τηλέφωνο</th>
+              <th style={{padding:'14px 12px',textAlign:'left'}}>Ρόλος</th>
               <th style={{padding:'14px 12px',textAlign:'left'}}>Ημ/νία Εγγραφής</th>
               <th style={{padding:'14px 12px',textAlign:'center'}}>Ενέργειες</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Φόρτωση χρηστών...</td></tr>
+              <tr><td colSpan={6} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Φόρτωση χρηστών...</td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={5} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Δεν βρέθηκαν χρήστες.</td></tr>
+              <tr><td colSpan={6} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Δεν βρέθηκαν χρήστες.</td></tr>
             ) : users.map(u => (
               <tr key={u.id} style={{borderBottom:'1px solid #f6c77a55'}}>
                 <td style={{padding:'12px 10px'}}>{u.email}</td>
                 <td style={{padding:'12px 10px'}}>{u.name}</td>
                 <td style={{padding:'12px 10px'}}>{u.phone}</td>
+                <td style={{padding:'12px 10px'}}>
+                  <span style={{
+                    color: u.role === 'admin' ? '#b87b2a' : u.role === 'superadmin' ? '#7a4a1a' : '#666',
+                    fontWeight: u.role === 'admin' || u.role === 'superadmin' ? '700' : '500',
+                    textTransform: 'capitalize'
+                  }}>
+                    {u.role === 'customer' ? 'Πελάτης' : u.role === 'admin' ? 'Διαχειριστής' : 'Σούπερ Διαχειριστής'}
+                  </span>
+                </td>
                 <td style={{padding:'12px 10px'}}>{u.created_at}</td>
                 <td style={{padding:'12px 10px',textAlign:'center'}}>
                   <button style={{background:'#b87b2a',color:'#fff',border:'none',borderRadius:8,padding:'8px 18px',fontWeight:700,fontSize:15,cursor:'pointer'}} onClick={()=>handleView(u)}>Προβολή</button>
@@ -319,6 +333,7 @@ export default function AdminUsers() {
                   <div><b>Τηλέφωνο:</b> <span style={{color:'#7a4a1a'}}>{selectedUser.phone}</span></div>
                   <div><b>Ημ/νία Εγγραφής:</b> <span style={{color:'#7a4a1a'}}>{selectedUser.created_at}</span></div>
                   <div><b>Κατάσταση:</b> <span style={{color: selectedUser.active ? '#4caf50' : '#b82a2a', fontWeight:700}}>{selectedUser.active ? 'Ενεργός' : 'Ανενεργός'}</span></div>
+                  <div><b>Ρόλος:</b> <span style={{color:'#7a4a1a'}}>{selectedUser.role.charAt(0).toUpperCase() + selectedUser.role.slice(1)}</span></div>
                 </div>
                 <div style={{display:'flex',gap:12,justifyContent:'center',marginBottom:18,flexWrap:'wrap'}}>
                   <button onClick={handleEdit} style={{background:'#f6c77a',color:'#7a4a1a',border:'none',borderRadius:10,padding:'10px 22px',fontWeight:800,fontSize:16,cursor:'pointer'}}>Επεξεργασία</button>
@@ -345,6 +360,14 @@ export default function AdminUsers() {
                   <div>
                     <b>Τηλέφωνο:</b>
                     <input name="phone" value={editForm.phone} onChange={handleEditChange} style={{marginLeft:8,padding:'8px 10px',borderRadius:8,border:'1.5px solid #f6c77a',fontSize:15}} />
+                  </div>
+                  <div>
+                    <b>Ρόλος:</b>
+                    <select name="role" value={editForm.role} onChange={handleEditChange} style={{marginLeft:8,padding:'8px 10px',borderRadius:8,border:'1.5px solid #f6c77a',fontSize:15}}>
+                      <option value="customer">Πελάτης</option>
+                      <option value="admin">Διαχειριστής</option>
+                      <option value="superadmin">Σούπερ Διαχειριστής</option>
+                    </select>
                   </div>
                   <div><b>Ημ/νία Εγγραφής:</b> <span style={{color:'#7a4a1a'}}>{selectedUser.created_at}</span></div>
                 </div>

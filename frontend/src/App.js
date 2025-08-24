@@ -1,5 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
+import './components/mobile/MobileProducts.css';
+import './components/desktop/DesktopProducts.css';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import ScrollToTop from './ScrollToTop';
 import { FaUserCircle, FaShoppingCart, FaHeart, FaRegHeart, FaFacebook, FaInstagram, FaTag, FaStar, FaGift } from 'react-icons/fa';
@@ -383,6 +385,7 @@ function ProductsPage() {
   const { mockProducts } = useContext(ProductsContext);
   const { addToCart } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
+  const mobile = useMobile();
   
 
   
@@ -755,17 +758,17 @@ function ProductsPage() {
         </aside>
         {/* Products Grid */}
         <div className="Products-main Products-content">
-          <div className="products-toolbar" style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-            <div className="Products-title products-title-align" style={{marginBottom:0}}>Όλα τα Προϊόντα</div>
+          <div className={`products-toolbar ${mobile ? 'mobile-toolbar' : ''}`} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+            <div className={`Products-title products-title-align ${mobile ? 'mobile-products-title' : ''}`} style={{marginBottom:0}}>Όλα τα Προϊόντα</div>
             <input
-              className="products-search-bar"
+              className={`products-search-bar ${mobile ? 'mobile-search-bar' : ''}`}
               type="text"
               placeholder="Αναζήτηση..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{marginLeft: 8, minWidth: 120, width: 'auto', maxWidth: 200, borderRadius: 8, border: '1px solid #e5d6c7', padding: '8px 12px', fontSize: 14, fontFamily: 'Montserrat', background: '#fff6ec', color: '#7a4a1a', fontWeight: 500}}
             />
-            <select className="sort-dropdown" value={sortBy} onChange={handleSortChange} style={{marginLeft: 'auto', marginBottom: 0, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5d6c7', fontFamily: 'Montserrat', fontWeight: 600, color: '#b87b2a', background: '#fff6ec', fontSize: 12, minWidth: 80}}>
+            <select className={`sort-dropdown ${mobile ? 'mobile-sort-dropdown' : ''}`} value={sortBy} onChange={handleSortChange} style={{marginLeft: 'auto', marginBottom: 0, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5d6c7', fontFamily: 'Montserrat', fontWeight: 600, color: '#b87b2a', background: '#fff6ec', fontSize: 12, minWidth: 80}}>
               <option value="newest">Νεότερα</option>
               <option value="price-asc">Φθηνότερα</option>
               <option value="price-desc">Ακριβότερα</option>
@@ -773,10 +776,10 @@ function ProductsPage() {
               <option value="alpha-desc">Αλφαβητικά (Ω-Α)</option>
             </select>
           </div>
-          <div className="products-count">Βρέθηκαν {filteredProducts.length} προϊόντα</div>
-          <div className="Products-grid-2cols">
+          <div className={`products-count ${mobile ? 'mobile-products-count' : ''}`}>Βρέθηκαν {filteredProducts.length} προϊόντα</div>
+          <div className={`Products-grid-2cols ${mobile ? 'mobile-products-grid' : ''}`}>
             {visibleProducts.map(product => (
-              <div className="premium-card" key={product.id}>
+              <div className={`premium-card ${mobile ? 'mobile-product-card' : ''}`} key={product.id}>
                 <ProductImage src={product.image} alt={product.name} />
                 <h3>{product.name}</h3>
                 <div className="product-price">

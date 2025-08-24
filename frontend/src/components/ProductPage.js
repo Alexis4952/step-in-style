@@ -1,14 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './ProductPage.css';
+import './mobile/MobileProductPage.css';
+import './desktop/DesktopProducts.css';
 // import { ProductsContext } from './desktop/App';
 import Slider from 'react-slick';
 import { ProductCardWithLogo } from './desktop/App';
 import { useCart } from '../CartContext';
 import { supabase } from '../supabaseClient';
+import { useMobile } from '../hooks/useMobile';
 
 export default function ProductPage({ productId: propProductId }) {
   const { productId } = useParams();
+  const mobile = useMobile(); // Mobile detection
   // const { mockProducts } = useContext(ProductsContext);
   const mockProducts = []; // Temporary empty array
   const id = Number(propProductId || productId);
@@ -232,23 +236,28 @@ export default function ProductPage({ productId: propProductId }) {
   return (
     <div className="product-hero-bg">
       <div className="product-hero-overlay" />
-      <div className="product-main-bigcard">
-                 <div className="product-main-bigcard-flex">
-           {/* Gallery */}
-          <div className="product-gallery-vertical">
+      <div className={`product-main-bigcard ${mobile ? 'mobile-product-card' : ''}`}>
+        <div className={`product-main-bigcard-flex ${mobile ? 'mobile-product-flex' : ''}`}>
+          {/* Title moved above images */}
+          <div className={`product-title-section ${mobile ? 'mobile-title-section' : ''}`}>
+            <div className="product-brand-badge">{product.brand}</div>
+            <h1 className="product-title-hero">{product.name}</h1>
+          </div>
+          
+          {/* Gallery - Main image first, then thumbnails below */}
+          <div className={`product-gallery-vertical ${mobile ? 'mobile-gallery' : ''}`}>
+            <div className="product-mainimg-hero">
+              <img src={mainImg} alt={product.name} />
+            </div>
             <div className="product-thumbs-vertical">
               {product.images.map((img, i) => (
                 <img key={i} src={img} alt="thumb" className={`thumb${mainImg===img?' selected':''}`} onClick={()=>setMainImg(img)} />
               ))}
             </div>
-            <div className="product-mainimg-hero">
-              <img src={mainImg} alt={product.name} />
-            </div>
           </div>
+          
           {/* Info + Tabs */}
-          <div className="product-info-floating-card">
-            <div className="product-brand-badge">{product.brand}</div>
-            <h1 className="product-title-hero">{product.name}</h1>
+          <div className={`product-info-floating-card ${mobile ? 'mobile-info-card' : ''}`}>
                          <div className="product-meta-hero">
                <span>SKU: {product.sku}</span>
                <span className={(() => {
