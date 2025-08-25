@@ -27,6 +27,10 @@ import AdminDashboard from './AdminDashboard';
 import AdminOrders from './AdminOrders';
 import AdminProducts from './AdminProducts';
 import AdminUsers from './AdminUsers';
+import AdminMessages from './AdminMessages';
+import CheckoutPage from './CheckoutPage';
+import OrderSuccessPage from './OrderSuccessPage';
+import OrderTrackingPage from './OrderTrackingPage';
 // 🔥 ULTRA MODERN MOBILE IMPORTS
 import { useMobile, MobileNavbar, MobileHero, MobileProductCard, MobileCarouselsByTag } from './MobileApp';
 
@@ -199,10 +203,9 @@ function OffersCarousel() {
 }
 
 function FloatingCart() {
-  const { cart, total, removeFromCart, updateQty, handleCheckout } = useCart();
+  const { cart, total, removeFromCart, updateQty } = useCart();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
   return (
     <>
       <button className="FloatingCart" onClick={() => setOpen(o => !o)} aria-label="Άνοιγμα καλαθιού">
@@ -239,29 +242,15 @@ function FloatingCart() {
                   ))}
                 </ul>
                 <div className="cart-total">Σύνολο: <b>{total.toFixed(2)}€</b></div>
-                {message && (
-                  <div className={`cart-message ${message.includes('επιτυχώς') ? 'success' : 'error'}`}>
-                    {message}
-                  </div>
-                )}
                 <button 
                   className="cart-checkout-btn" 
-                  onClick={async () => {
-                    setLoading(true);
-                    setMessage('');
-                    const result = await handleCheckout();
-                    setMessage(result.message);
-                    setLoading(false);
-                    if (result.success) {
-                      setTimeout(() => {
-                        setOpen(false);
-                        setMessage('');
-                      }, 2000);
-                    }
+                  onClick={() => {
+                    setOpen(false);
+                    navigate('/checkout');
                   }}
-                  disabled={loading || cart.length === 0}
+                  disabled={cart.length === 0}
                 >
-                  {loading ? 'Επεξεργασία...' : 'Ολοκλήρωση Αγοράς'}
+                  Ολοκλήρωση Αγοράς
                 </button>
               </>
             )}
@@ -867,12 +856,13 @@ function Footer() {
           <button onClick={() => handleNavigation('/')}>Αρχική</button>
           <button onClick={() => handleNavigation('/products')}>Προϊόντα</button>
           <button onClick={() => handleNavigation('/contact')}>Επικοινωνία</button>
+          <button onClick={() => handleNavigation('/track-order')}>Παρακολούθηση Παραγγελίας</button>
           <button onClick={() => handleNavigation('/terms')}>Όροι Χρήσης</button>
           <button onClick={() => handleNavigation('/returns-policy')}>Πολιτική Επιστροφών</button>
         </div>
         <div className="footer-social">
-          <a href="#" aria-label="Facebook"><FaFacebook size={24} /></a>
-          <a href="#" aria-label="Instagram"><FaInstagram size={24} /></a>
+          <a href="https://www.facebook.com/share/15ytp57rRz/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebook size={24} /></a>
+          <a href="https://www.instagram.com/stepinstyle24?igsh=aGxrdHhwaHp2dW44" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram size={24} /></a>
         </div>
         <div className="footer-contact">
           <div>Email: info@stepinstyle.gr</div>
@@ -956,6 +946,19 @@ function MainApp({ offers, mockProducts, loading }) {
           <Route path="/returns-policy" element={<ReturnsPolicyPage />} />
           <Route path="/account" element={<AccountDashboard mockProducts={mockProducts} />} />
           <Route path="/account/support" element={<AccountSupport />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order-success" element={<OrderSuccessPage />} />
+          <Route path="/track-order" element={<OrderTrackingPage />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="messages" element={<AdminMessages />} />
+          </Route>
         </Routes>
         {!location.pathname.startsWith('/admin') && <FloatingCart />}
         {!location.pathname.startsWith('/admin') && <Footer />}

@@ -28,21 +28,39 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
+    try {
+      // Send to backend API
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
       });
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 1000);
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        alert('Σφάλμα: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Σφάλμα κατά την αποστολή:', error);
+      alert('Παρουσιάστηκε σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,7 +86,7 @@ export default function ContactPage() {
                 <FaMapMarkerAlt className="contact-icon" />
                 <div className="contact-details">
                   <h3>Διεύθυνση</h3>
-                  <p>Ερμού 123, Αθήνα 10563<br/>Κέντρο, Ελλάδα</p>
+                  <p>Λέρου 8, Περιστέρι<br/>Πλατεία Δασκαλογιάννη</p>
                 </div>
               </div>
 
@@ -76,7 +94,7 @@ export default function ContactPage() {
                 <FaPhone className="contact-icon" />
                 <div className="contact-details">
                   <h3>Τηλέφωνο</h3>
-                  <p>210 1234567<br/>6944 123456</p>
+                  <p>6986749305</p>
                 </div>
               </div>
 
@@ -84,7 +102,7 @@ export default function ContactPage() {
                 <FaEnvelope className="contact-icon" />
                 <div className="contact-details">
                   <h3>Email</h3>
-                  <p>info@stepinstyle.gr<br/>orders@stepinstyle.gr</p>
+                  <p>info@stepinstyle.gr</p>
                 </div>
               </div>
 
@@ -92,9 +110,71 @@ export default function ContactPage() {
                 <FaClock className="contact-icon" />
                 <div className="contact-details">
                   <h3>Ώρες Λειτουργίας</h3>
-                  <p>Δευτέρα - Παρασκευή: 9:00 - 20:00<br/>
-                     Σάββατο: 9:00 - 18:00<br/>
-                     Κυριακή: 11:00 - 16:00</p>
+                  <div className="schedule-table" style={{
+                    background: 'linear-gradient(135deg, #fff6ec 0%, #f8f4eb 100%)',
+                    border: '2px solid #e5d6c7',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    marginTop: '8px',
+                    boxShadow: '0 2px 8px rgba(184, 123, 42, 0.1)'
+                  }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto',
+                      gap: '12px',
+                      fontSize: '0.9rem'
+                    }}>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#b87b2a',
+                        borderBottom: '1px solid #e5d6c7',
+                        paddingBottom: '8px',
+                        marginBottom: '8px'
+                      }}>
+                        📅 Ημέρες
+                      </div>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#b87b2a',
+                        borderBottom: '1px solid #e5d6c7',
+                        paddingBottom: '8px',
+                        marginBottom: '8px',
+                        textAlign: 'right'
+                      }}>
+                        🕐 Ώρες
+                      </div>
+                      
+                      <div style={{color: '#2c2c2c', fontWeight: '500'}}>
+                        Δευτέρα, Τετάρτη, Σάββατο
+                      </div>
+                      <div style={{
+                        color: '#b87b2a',
+                        fontWeight: '600',
+                        textAlign: 'right',
+                        background: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #e5d6c7'
+                      }}>
+                        10:00 - 15:00
+                      </div>
+                      
+                      <div style={{color: '#2c2c2c', fontWeight: '500'}}>
+                        Τρίτη, Πέμπτη, Παρασκευή
+                      </div>
+                      <div style={{
+                        color: '#b87b2a',
+                        fontWeight: '600',
+                        textAlign: 'right',
+                        background: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #e5d6c7'
+                      }}>
+                        10:00-14:00<br/>17:00-21:00
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -103,11 +183,11 @@ export default function ContactPage() {
             <div className="contact-social">
               <h3>Ακολουθήστε μας</h3>
               <div className="social-links">
-                <a href="#" className="social-link facebook">
+                <a href="https://www.facebook.com/share/15ytp57rRz/" target="_blank" rel="noopener noreferrer" className="social-link facebook">
                   <FaFacebook />
                   <span>Facebook</span>
                 </a>
-                <a href="#" className="social-link instagram">
+                <a href="https://www.instagram.com/stepinstyle24?igsh=aGxrdHhwaHp2dW44" target="_blank" rel="noopener noreferrer" className="social-link instagram">
                   <FaInstagram />
                   <span>Instagram</span>
                 </a>

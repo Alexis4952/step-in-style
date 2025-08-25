@@ -93,6 +93,7 @@ export default function AdminDashboard() {
 
         // Get total orders (handle error gracefully)
         try {
+          // 1. Get Supabase orders
           const { data: ordersData, error: ordersError } = await supabase
             .from('orders')
             .select('*');
@@ -101,6 +102,24 @@ export default function AdminDashboard() {
           }
         } catch (error) {
           console.log('Orders table not found, using 0 orders');
+        }
+
+        // 2. Get guest orders from API
+        try {
+          const response = await fetch('http://localhost:5000/api/orders');
+          const result = await response.json();
+          
+          if (result.success && result.orders) {
+            // Add guest orders to the orders array
+            const guestOrders = result.orders.map(order => ({
+              ...order,
+              total: parseFloat(order.total),
+              created_at: order.created_at
+            }));
+            orders = [...orders, ...guestOrders];
+          }
+        } catch (apiError) {
+          console.log('Guest orders not available:', apiError);
         }
 
         // Get all users (handle error gracefully)
@@ -129,9 +148,9 @@ export default function AdminDashboard() {
           console.error('Error fetching products:', error);
         }
 
-        // Calculate total revenue from real orders
+        // Calculate total revenue from real orders (include pending guest orders)
         const totalRevenue = orders
-          .filter(order => order.status === 'completed')
+          .filter(order => order.status === 'completed' || order.status === 'pending')
           .reduce((sum, order) => sum + (order.total || 0), 0);
 
         // Format real orders for display

@@ -15,7 +15,7 @@ export default function AccountSupport() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -24,11 +24,37 @@ export default function AccountSupport() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setSuccess('Το μήνυμά σου στάλθηκε! Θα επικοινωνήσουμε σύντομα.');
+    
+    try {
+      // Send to backend API
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone || '',
+          subject: 'Υποστήριξη - ' + (form.subject || 'Γενική ερώτηση'),
+          message: form.message
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess('Το μήνυμά σου στάλθηκε! Θα επικοινωνήσουμε σύντομα.');
+        setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+      } else {
+        setError('Σφάλμα: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Σφάλμα κατά την αποστολή:', error);
+      setError('Παρουσιάστηκε σφάλμα. Παρακαλώ δοκιμάστε ξανά.');
+    } finally {
       setLoading(false);
-      setForm({ name: '', email: '', message: '' });
-    }, 1200);
+    }
   };
 
   React.useEffect(() => {
@@ -55,8 +81,16 @@ export default function AccountSupport() {
             <div className="support-hero-contact-list">
               <div className="support-hero-contact-item"><FaEnvelope /> support@stepinstyle.gr</div>
               <div className="support-hero-contact-item"><FaPhone /> +30 210 1234567</div>
-              <div className="support-hero-contact-item"><FaFacebook /> /stepinstyle</div>
-              <div className="support-hero-contact-item"><FaInstagram /> @stepinstyle.gr</div>
+              <div className="support-hero-contact-item">
+                <a href="https://www.facebook.com/share/15ytp57rRz/" target="_blank" rel="noopener noreferrer" style={{color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  <FaFacebook /> facebook.com/stepinstyle
+                </a>
+              </div>
+              <div className="support-hero-contact-item">
+                <a href="https://www.instagram.com/stepinstyle24?igsh=aGxrdHhwaHp2dW44" target="_blank" rel="noopener noreferrer" style={{color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  <FaInstagram /> @stepinstyle24
+                </a>
+              </div>
             </div>
           </section>
           <section className="support-hero-form">

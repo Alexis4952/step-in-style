@@ -22,6 +22,7 @@ export default function AdminLayout() {
     { to: '/admin/orders', label: 'Παραγγελίες' },
     { to: '/admin/products', label: 'Προϊόντα' },
     { to: '/admin/users', label: 'Χρήστες' },
+    { to: '/admin/messages', label: 'Μηνύματα Επικοινωνίας' },
   ];
 
   return (

@@ -9,7 +9,7 @@ const statusColors = {
 };
 
 const statusLabels = {
-  'completed': 'Ολοκληρώθηκε',
+  'completed': 'Προς αποστολή',
   'pending': 'Εκκρεμεί',
   'processing': 'Σε εξέλιξη',
   'cancelled': 'Ακυρώθηκε',
@@ -33,28 +33,77 @@ export default function AdminOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+      
+      // 1. Fetch orders from Supabase (existing orders)
+      let supabaseOrders = [];
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching orders:', error);
-        setOrders([]);
-      } else {
-        // Format orders for display
-        const formattedOrders = (data || []).map(order => ({
-          id: `ORD-${String(order.id).padStart(3, '0')}`,
-          customer: order.customer_name || 'Άγνωστος πελάτης',
-          email: order.customer_email || 'Δεν υπάρχει email',
-          date: new Date(order.created_at).toLocaleDateString('el-GR'),
-          total: `${order.total}€`,
-          status: order.status,
-          originalId: order.id,
-          items: [] // We'll add order items later if needed
-        }));
-        setOrders(formattedOrders);
+        if (!error && data) {
+          supabaseOrders = data.map(order => ({
+            id: `ORD-${String(order.id).padStart(3, '0')}`,
+            customer: order.customer_name || 'Άγνωστος πελάτης',
+            email: order.customer_email || 'Δεν υπάρχει email',
+            date: new Date(order.created_at).toLocaleDateString('el-GR'),
+            total: `${order.total}€`,
+            status: order.status,
+            originalId: order.id,
+            items: [],
+            source: 'supabase'
+          }));
+        }
+      } catch (supabaseError) {
+        console.log('Supabase orders not available:', supabaseError);
       }
+
+      // 2. Fetch guest orders from our API
+      let guestOrders = [];
+      try {
+        const response = await fetch('http://localhost:5000/api/orders');
+        const result = await response.json();
+        
+        if (result.success && result.orders) {
+          guestOrders = result.orders.map(order => ({
+            id: order.order_number,
+            customer: order.customer_name,
+            email: order.customer_email,
+            date: new Date(order.created_at).toLocaleDateString('el-GR'),
+            total: `${order.total}€`,
+            status: order.status || 'pending',
+            originalId: order.id,
+            items: order.items || [],
+            source: 'api',
+            phone: order.customer_phone,
+            address: order.customer_address,
+            order_type: order.order_type || 'guest'
+          }));
+        }
+      } catch (apiError) {
+        console.log('API orders not available:', apiError);
+      }
+
+      // 3. Combine and sort all orders
+      const allOrders = [...supabaseOrders, ...guestOrders];
+      
+      // Sort by date (newest first) - handle Greek date format
+      allOrders.sort((a, b) => {
+        const parseGreekDate = (dateStr) => {
+          const [day, month, year] = dateStr.split('/');
+          return new Date(year, month - 1, day);
+        };
+        return parseGreekDate(b.date) - parseGreekDate(a.date);
+      });
+
+      setOrders(allOrders);
+      console.log('📋 Loaded orders:', {
+        supabase: supabaseOrders.length,
+        guest: guestOrders.length,
+        total: allOrders.length
+      });
+
     } catch (error) {
       console.error('Error fetching orders:', error);
       setOrders([]);
@@ -65,7 +114,7 @@ export default function AdminOrders() {
 
   const filtered = orders.filter(o => {
     const statusMatch = statusFilter === 'Όλες' || 
-      (statusFilter === 'Ολοκληρώθηκε' && o.status === 'completed') ||
+      (statusFilter === 'Προς αποστολή' && o.status === 'completed') ||
       (statusFilter === 'Εκκρεμεί' && o.status === 'pending') ||
       (statusFilter === 'Σε εξέλιξη' && o.status === 'processing') ||
       (statusFilter === 'Ακυρώθηκε' && o.status === 'cancelled');
@@ -87,20 +136,40 @@ export default function AdminOrders() {
 
       // Convert Greek status to English for database
       let englishStatus = pendingStatus;
-      if (pendingStatus === 'Ολοκληρώθηκε') englishStatus = 'completed';
+      if (pendingStatus === 'Προς αποστολή') englishStatus = 'completed';
       else if (pendingStatus === 'Εκκρεμεί') englishStatus = 'pending';
       else if (pendingStatus === 'Σε εξέλιξη') englishStatus = 'processing';
       else if (pendingStatus === 'Ακυρώθηκε') englishStatus = 'cancelled';
 
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: englishStatus })
-        .eq('id', order.originalId);
+      // Update status based on order source
+      if (order.source === 'api') {
+        // Guest order - update via our API
+        const response = await fetch(`http://localhost:5000/api/orders/${order.originalId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: englishStatus })
+        });
 
-      if (error) {
-        console.error('Error updating order status:', error);
-        alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
-        return;
+        const result = await response.json();
+        if (!result.success) {
+          console.error('Error updating guest order status:', result.error);
+          alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
+          return;
+        }
+      } else {
+        // Supabase order - update via Supabase
+        const { error } = await supabase
+          .from('orders')
+          .update({ status: englishStatus })
+          .eq('id', order.originalId);
+
+        if (error) {
+          console.error('Error updating Supabase order status:', error);
+          alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
+          return;
+        }
       }
 
       // Update local state
@@ -132,7 +201,7 @@ export default function AdminOrders() {
           style={{padding:'14px 18px',borderRadius:12,border:'1.5px solid #f6c77a',fontSize:17,fontFamily:'Montserrat'}}
         >
           <option>Όλες</option>
-          <option>Ολοκληρώθηκε</option>
+          <option>Προς αποστολή</option>
           <option>Εκκρεμεί</option>
           <option>Σε εξέλιξη</option>
           <option>Ακυρώθηκε</option>
@@ -158,7 +227,14 @@ export default function AdminOrders() {
               <tr><td colSpan={7} style={{textAlign:'center',padding:'32px',color:'#b87b2a',fontWeight:700}}>Δεν βρέθηκαν παραγγελίες.</td></tr>
             ) : paginated.map((o,i) => (
               <tr key={i} style={{borderBottom:'1px solid #f6c77a',background:i%2?'#fff':'#fff6ec'}}>
-                <td style={{padding:'14px 0 14px 24px',fontWeight:700}}>{o.id}</td>
+                <td style={{padding:'14px 0 14px 24px',fontWeight:700}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    {o.id}
+                    {o.source === 'api' && (
+                      <span style={{background:'#17a2b8',color:'#fff',borderRadius:6,padding:'2px 6px',fontSize:11,fontWeight:700}}>GUEST</span>
+                    )}
+                  </div>
+                </td>
                 <td style={{padding:'14px 0'}}>{o.customer}</td>
                 <td style={{padding:'14px 0'}}>{o.email}</td>
                 <td style={{padding:'14px 0'}}>{o.date}</td>
@@ -201,7 +277,7 @@ export default function AdminOrders() {
                   onChange={e=>setPendingStatus(e.target.value)} 
                   style={{padding:'8px 14px',borderRadius:8,border:'1.5px solid #f6c77a',fontSize:16,fontWeight:700,marginLeft:8}}
                 >
-                  <option value="Ολοκληρώθηκε">Ολοκληρώθηκε</option>
+                  <option value="Προς αποστολή">Προς αποστολή</option>
                   <option value="Εκκρεμεί">Εκκρεμεί</option>
                   <option value="Σε εξέλιξη">Σε εξέλιξη</option>
                   <option value="Ακυρώθηκε">Ακυρώθηκε</option>

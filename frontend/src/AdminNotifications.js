@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import notificationService from './services/notificationService';
 
 export default function AdminNotifications() {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ export default function AdminNotifications() {
   useEffect(() => {
     fetchNotifications();
     
-    // Real-time subscription για νέες notifications
+    // Real-time subscription για νέες order notifications από Supabase
     const subscription = supabase
       .channel('admin_notifications')
       .on('postgres_changes', 
@@ -39,26 +38,45 @@ export default function AdminNotifications() {
       )
       .subscribe();
 
+    // Polling για contact notifications από το δικό μας API κάθε 10 δευτερόλεπτα
+    const contactInterval = setInterval(fetchContactNotifications, 10000);
+
     return () => {
       subscription.unsubscribe();
+      clearInterval(contactInterval);
     };
   }, []);
 
   const fetchNotifications = async () => {
     try {
-      const { data, error } = await supabase
+      // 1. Φόρτωση παραγγελιών από Supabase (παλιό σύστημα)
+      const { data: supabaseNotifications, error } = await supabase
         .from('admin_notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) {
-        console.error('Error fetching notifications:', error);
-        return;
+        console.error('Error fetching Supabase notifications:', error);
       }
 
-      setNotifications(data || []);
-      const unread = (data || []).filter(n => !n.read).length;
+      // 2. Φόρτωση contact notifications από δικό μας API  
+      const contactResponse = await fetch('http://localhost:5000/api/contact/notifications');
+      const contactData = await contactResponse.json();
+      
+      let contactNotifications = [];
+      if (contactData.success) {
+        contactNotifications = contactData.notifications;
+      }
+
+      // 3. Συνδυασμός όλων των notifications
+      const allNotifications = [
+        ...(supabaseNotifications || []),
+        ...contactNotifications
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      setNotifications(allNotifications);
+      const unread = allNotifications.filter(n => !n.read).length;
       setUnreadCount(unread);
     } catch (error) {
       console.error('Error in fetchNotifications:', error);
@@ -67,22 +85,84 @@ export default function AdminNotifications() {
     }
   };
 
+  const fetchContactNotifications = async () => {
+    try {
+      // Μόνο για contact notifications (για το polling)
+      const response = await fetch('http://localhost:5000/api/contact/notifications');
+      const data = await response.json();
+
+      if (data.success) {
+        // Ενημέρωση μόνο των contact notifications
+        setNotifications(prev => {
+          const nonContactNotifications = prev.filter(n => n.type !== 'new_contact_message');
+          const existingContactNotifications = prev.filter(n => n.type === 'new_contact_message');
+          
+          // Merge existing read status with new data
+          const updatedContactNotifications = data.notifications.map(newNotification => {
+            const existing = existingContactNotifications.find(existing => existing.id === newNotification.id);
+            return existing ? { ...newNotification, read: existing.read } : newNotification;
+          });
+          
+          const allNotifications = [
+            ...nonContactNotifications,
+            ...updatedContactNotifications
+          ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          return allNotifications;
+        });
+        
+        // Ενημέρωση unread count με βάση τα πραγματικά unread (μετά το merge)
+        setTimeout(() => {
+          setNotifications(current => {
+            const contactUnread = current.filter(n => n.type === 'new_contact_message' && !n.read).length;
+            const otherUnread = current.filter(n => n.type !== 'new_contact_message' && !n.read).length;
+            setUnreadCount(contactUnread + otherUnread);
+            return current;
+          });
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error fetching contact notifications:', error);
+    }
+  };
+
   const markAsRead = async (notificationId) => {
     try {
-      const { error } = await supabase
-        .from('admin_notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
+      const notification = notifications.find(n => n.id === notificationId);
+      
+      if (notification?.type === 'new_contact_message' || notification?.type === 'new_order') {
+        // Contact notification ή guest order notification - χρησιμοποιούμε το δικό μας API
+        const endpoint = notification?.type === 'new_contact_message' 
+          ? `http://localhost:5000/api/contact/notifications/${notificationId}/read`
+          : `http://localhost:5000/api/contact/notifications/${notificationId}/read`; // Reuse same endpoint for simplicity
+        
+        const response = await fetch(endpoint, {
+          method: 'PUT'
+        });
+        
+        if (response.ok) {
+          setNotifications(prev => 
+            prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+          );
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+      } else {
+        // Legacy Supabase order notification - χρησιμοποιούμε Supabase
+        const { error } = await supabase
+          .from('admin_notifications')
+          .update({ read: true })
+          .eq('id', notificationId);
 
-      if (error) {
-        console.error('Error marking notification as read:', error);
-        return;
+        if (error) {
+          console.error('Error marking notification as read:', error);
+          return;
+        }
+
+        setNotifications(prev => 
+          prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
       }
-
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error in markAsRead:', error);
     }
@@ -90,16 +170,17 @@ export default function AdminNotifications() {
 
   const markAllAsRead = async () => {
     try {
+      // Mark all Supabase notifications as read
       const { error } = await supabase
         .from('admin_notifications')
         .update({ read: true })
         .eq('read', false);
 
       if (error) {
-        console.error('Error marking all as read:', error);
-        return;
+        console.error('Error marking Supabase notifications as read:', error);
       }
 
+      // Mark all notifications as read in UI (includes contact notifications)
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
@@ -107,16 +188,19 @@ export default function AdminNotifications() {
     }
   };
 
-  const handleNotificationClick = (notification) => {
+  const handleNotificationClick = async (notification) => {
     // Mark as read if unread
     if (!notification.read) {
-      markAsRead(notification.id);
+      await markAsRead(notification.id);
     }
     
     // Navigate based on notification type
     if (notification.type === 'new_order' && notification.order_id) {
       setShowDropdown(false);
       navigate('/admin/orders');
+    } else if (notification.type === 'new_contact_message') {
+      setShowDropdown(false);
+      navigate('/admin/messages');
     }
   };
 
@@ -197,7 +281,11 @@ export default function AdminNotifications() {
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="notification-content">
-                    <div className="notification-title">{notification.title}</div>
+                    <div className="notification-title">
+                      {notification.type === 'new_contact_message' && '💬 '}
+                      {notification.type === 'new_order' && '📦 '}
+                      {notification.title}
+                    </div>
                     <div className="notification-message">{notification.message}</div>
                     <div className="notification-time">
                       {formatTime(notification.created_at)}
@@ -206,6 +294,11 @@ export default function AdminNotifications() {
                   {notification.type === 'new_order' && (
                     <div className="notification-amount">
                       {notification.amount}€
+                    </div>
+                  )}
+                  {notification.type === 'new_contact_message' && (
+                    <div className="notification-icon">
+                      📧
                     </div>
                   )}
                 </div>
