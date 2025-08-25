@@ -26,12 +26,16 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [
+      'http://localhost:3000',
+      'https://step-in-style.vercel.app',
+      'https://stepinstyle24.vercel.app'
+    ];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://step-in-style.vercel.app',
-    'https://stepinstyle24.vercel.app'
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 
