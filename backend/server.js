@@ -7,6 +7,9 @@ require('dotenv').config({ path: './config.env' });
 
 // Import routes
 const adminRoutes = require('./routes/admin');
+const contactRoutes = require('./routes/contact');
+const orderRoutes = require('./routes/orders');
+const stripeRoutes = require('./routes/stripe');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,9 +27,11 @@ app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
-    : ['http://localhost:3000'],
+  origin: [
+    'http://localhost:3000',
+    'https://step-in-style.vercel.app',
+    'https://stepinstyle24.vercel.app'
+  ],
   credentials: true
 }));
 
@@ -48,6 +53,9 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -67,6 +75,10 @@ app.listen(PORT, () => {
   console.log(`🚀 Step in Style API server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔑 Supabase URL: ${process.env.SUPABASE_URL ? 'SET' : 'NOT SET'}`);
+  console.log(`🔑 Supabase Key: ${process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'}`);
+  console.log(`💳 Stripe Secret Key: ${process.env.STRIPE_SECRET_KEY ? 'SET' : 'NOT SET'}`);
+  console.log(`💳 Stripe Publishable Key: ${process.env.STRIPE_PUBLISHABLE_KEY ? 'SET' : 'NOT SET'}`);
 });
 
 module.exports = app; 
