@@ -338,7 +338,7 @@ router.get('/track/:orderNumber', async (req, res) => {
 
     let order = null;
 
-    // Convert order number format (ORD-00000021 -> 21)
+    // Convert order number format (ORD-00000023 -> 23)
     const orderId = orderNumber.replace('ORD-', '').replace(/^0+/, '') || '0';
     
     console.log('🔍 Tracking order:', { orderNumber, email, orderId });
@@ -349,7 +349,7 @@ router.get('/track/:orderNumber', async (req, res) => {
         .from('orders')
         .select('*')
         .eq('id', parseInt(orderId))
-        .eq('customer_email', email.toLowerCase())
+        .ilike('customer_email', email.toLowerCase())
         .single();
 
       if (!supabaseError && supabaseOrders) {
