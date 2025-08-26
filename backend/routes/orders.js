@@ -331,6 +331,15 @@ router.get('/track/:orderNumber', async (req, res) => {
 
     // First check Supabase database (new orders)
     const { createClient } = require('@supabase/supabase-js');
+    
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      console.log('❌ Supabase credentials missing');
+      return res.status(500).json({
+        success: false,
+        error: 'Database configuration error'
+      });
+    }
+    
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
