@@ -4,6 +4,8 @@ import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { stripePromise, createPaymentIntent } from './services/stripeService';
+import CheckoutSizeSelector from './components/CheckoutSizeSelector';
+import { supabase } from './supabaseClient';
 import './App.css';
 
 // Stripe Card Styling
@@ -22,7 +24,7 @@ const cardElementOptions = {
 
 // Checkout Form Component (with Stripe)
 function CheckoutForm() {
-  const { cart, total, clearCart } = useCart();
+  const { cart, total, clearCart, updateItemSize } = useCart();
   const { user, register } = useAuth();
   const navigate = useNavigate();
   const stripe = useStripe();
@@ -44,8 +46,25 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Έλεγχος αν υπάρχουν παπούτσια χωρίς νούμερο
+  const hasShoesWithoutSize = () => {
+    return cart.some(item => 
+      item.category === 'Παπούτσια' && (!item.selectedSize || item.selectedSize === '')
+    );
+  };
+
   // Validation
   const validateForm = () => {
+    // Έλεγχος για παπούτσια χωρίς νούμερο
+    const shoesWithoutSize = cart.filter(item => 
+      item.category === 'Παπούτσια' && (!item.selectedSize || item.selectedSize === '')
+    );
+    
+    if (shoesWithoutSize.length > 0) {
+      setError(`Παρακαλώ επιλέξτε νούμερο για τα παπούτσια: ${shoesWithoutSize.map(item => item.name).join(', ')}`);
+      return false;
+    }
+    
     if (!customerInfo.name.trim()) {
       setError('Παρακαλώ εισάγετε το όνομά σας');
       return false;
@@ -87,44 +106,7 @@ function CheckoutForm() {
     return true;
   };
 
-  // Create guest order (our backend API)
-  const createGuestOrder = async () => {
-    try {
-      const orderData = {
-        customer_name: customerInfo.name,
-        customer_email: customerInfo.email,
-        customer_phone: customerInfo.phone,
-        customer_address: `${customerInfo.address}, ${customerInfo.city} ${customerInfo.zipCode}`,
-        items: cart.map(item => ({
-          product_id: item.id,
-          product_name: item.name,
-          quantity: item.qty,
-          price: parseFloat(item.price)
-        })),
-        total: total,
-        status: 'pending',
-        order_type: 'guest'
-      };
 
-      const response = await fetch('http://localhost:5000/api/orders/guest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Σφάλμα κατά τη δημιουργία παραγγελίας');
-      }
-
-      return result.order;
-    } catch (error) {
-      console.error('Error creating guest order:', error);
-      throw error;
-    }
-  };
 
   // Handle form submission with Stripe payment
   const handleSubmit = async (e) => {
@@ -167,7 +149,9 @@ function CheckoutForm() {
         items: cart.map(item => ({
           name: item.name,
           quantity: item.qty,
-          price: parseFloat(item.price)
+          price: parseFloat(item.price),
+          selectedSize: item.selectedSize || null,
+          category: item.category || null
         }))
       };
 
@@ -198,20 +182,109 @@ function CheckoutForm() {
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Create the order with payment info
-        const order = await createGuestOrder();
+        let result;
         
-        // Update order with payment details (optional - could be stored separately)
-        // await updateOrderWithPayment(order.id, paymentIntentId);
+        if (user) {
+          // Εγγεγραμμένος χρήστης - αποθήκευση στη Supabase
+          console.log('💾 Saving order for registered user to Supabase...');
+          
+          const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .insert({
+              customer_name: customerInfo.name,
+              customer_email: customerInfo.email,
+              customer_phone: customerInfo.phone,
+              customer_address: `${customerInfo.address}, ${customerInfo.city} ${customerInfo.zipCode}`,
+              items: cart.map(item => ({
+                product_id: item.id,
+                product_name: item.name,
+                quantity: item.qty,
+                price: parseFloat(item.price),
+                selectedSize: item.selectedSize || null,
+                category: item.category || null
+              })),
+              total: total,
+              status: 'pending',
+              order_type: 'registered',
+              payment_status: 'completed',
+              payment_method: 'stripe',
+              payment_id: paymentIntentId,
+              payment_amount: total,
+              user_id: user.id
+            })
+            .select()
+            .single();
+
+          if (orderError) {
+            console.error('Supabase order error:', orderError);
+            console.error('Order error details:', JSON.stringify(orderError, null, 2));
+            throw new Error('Σφάλμα κατά τη δημιουργία παραγγελίας στη βάση δεδομένων: ' + (orderError.message || orderError.details || 'Unknown error'));
+          }
+
+          result = {
+            success: true,
+            order: {
+              ...orderData,
+              order_number: `ORD-${String(orderData.id).padStart(8, '0')}`
+            }
+          };
+          
+        } else {
+          // Guest χρήστης - αποθήκευση στη Supabase
+          console.log('💾 Saving guest order to Supabase...');
+          
+          const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .insert({
+              customer_name: customerInfo.name,
+              customer_email: customerInfo.email,
+              customer_phone: customerInfo.phone,
+              customer_address: `${customerInfo.address}, ${customerInfo.city} ${customerInfo.zipCode}`,
+              items: cart.map(item => ({
+                product_id: item.id,
+                product_name: item.name,
+                quantity: item.qty,
+                price: parseFloat(item.price),
+                selectedSize: item.selectedSize || null,
+                category: item.category || null
+              })),
+              total: total,
+              status: 'pending',
+              order_type: 'guest',
+              payment_status: 'completed',
+              payment_method: 'stripe',
+              payment_id: paymentIntentId,
+              payment_amount: total,
+              user_id: null // Guest users don't have user_id
+            })
+            .select()
+            .single();
+
+          if (orderError) {
+            console.error('Supabase guest order error:', orderError);
+            console.error('Guest order error details:', JSON.stringify(orderError, null, 2));
+            throw new Error('Σφάλμα κατά τη δημιουργία παραγγελίας στη βάση δεδομένων: ' + (orderError.message || orderError.details || 'Unknown error'));
+          }
+
+          result = {
+            success: true,
+            order: {
+              ...orderData,
+              order_number: `ORD-${String(orderData.id).padStart(8, '0')}`
+            }
+          };
+        }
+
+        const order = result.order;
         
         // Clear cart and navigate to success
         clearCart();
         navigate('/order-success', { 
           state: { 
             orderId: order.id,
-            orderNumber: order.order_number,
+            orderNumber: order.order_number || `ORD-${order.id}`,
             email: customerInfo.email,
-            isGuest: !finalUserId,
+            isGuest: !user,
             paymentIntentId: paymentIntentId,
             paymentStatus: 'completed'
           } 
@@ -265,6 +338,10 @@ function CheckoutForm() {
                 <div className="order-item-details">
                   <h4>{item.name}</h4>
                   <p>Ποσότητα: {item.qty}</p>
+                  
+                  {/* Size Selector για παπούτσια */}
+                  <CheckoutSizeSelector item={item} />
+                  
                   <p className="order-item-price">{(parseFloat(item.price) * item.qty).toFixed(2)}€</p>
                 </div>
               </div>
@@ -438,9 +515,19 @@ function CheckoutForm() {
               <button
                 type="submit"
                 className="btn-primary checkout-submit"
-                disabled={loading}
+                disabled={loading || hasShoesWithoutSize()}
+                style={{
+                  opacity: (loading || hasShoesWithoutSize()) ? 0.5 : 1,
+                  cursor: (loading || hasShoesWithoutSize()) ? 'not-allowed' : 'pointer',
+                  backgroundColor: (loading || hasShoesWithoutSize()) ? '#666' : ''
+                }}
               >
-                {loading ? 'Επεξεργασία...' : `Ολοκλήρωση Παραγγελίας (${total.toFixed(2)}€)`}
+                {loading 
+                  ? 'Επεξεργασία...' 
+                  : hasShoesWithoutSize() 
+                    ? '⚠️ Επιλέξτε νούμερα παπουτσιών'
+                    : `Ολοκλήρωση Παραγγελίας (${total.toFixed(2)}€)`
+                }
               </button>
             </div>
           </form>

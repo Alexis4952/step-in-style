@@ -26,7 +26,7 @@ export default function AdminMessages() {
         params.append('status', filter);
       }
 
-      const response = await fetch(`http://localhost:5000/api/contact?${params}`);
+      const response = await fetch(`https://step-in-style-backend.onrender.com/api/contact?${params}`);
       const data = await response.json();
 
       if (data.success) {
@@ -51,7 +51,7 @@ export default function AdminMessages() {
   // Update message status
   const updateMessageStatus = async (messageId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/contact/${messageId}/status`, {
+      const response = await fetch(`https://step-in-style-backend.onrender.com/api/contact/${messageId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export default function AdminMessages() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/contact/${messageId}`, {
+      const response = await fetch(`https://step-in-style-backend.onrender.com/api/contact/${messageId}`, {
         method: 'DELETE'
       });
 

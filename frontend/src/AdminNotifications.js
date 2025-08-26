@@ -61,7 +61,7 @@ export default function AdminNotifications() {
       }
 
       // 2. Φόρτωση contact notifications από δικό μας API  
-      const contactResponse = await fetch('http://localhost:5000/api/contact/notifications');
+      const contactResponse = await fetch('https://step-in-style-backend.onrender.com/api/contact/notifications');
       const contactData = await contactResponse.json();
       
       let contactNotifications = [];
@@ -88,7 +88,7 @@ export default function AdminNotifications() {
   const fetchContactNotifications = async () => {
     try {
       // Μόνο για contact notifications (για το polling)
-      const response = await fetch('http://localhost:5000/api/contact/notifications');
+      const response = await fetch('https://step-in-style-backend.onrender.com/api/contact/notifications');
       const data = await response.json();
 
       if (data.success) {
@@ -133,8 +133,8 @@ export default function AdminNotifications() {
       if (notification?.type === 'new_contact_message' || notification?.type === 'new_order') {
         // Contact notification ή guest order notification - χρησιμοποιούμε το δικό μας API
         const endpoint = notification?.type === 'new_contact_message' 
-          ? `http://localhost:5000/api/contact/notifications/${notificationId}/read`
-          : `http://localhost:5000/api/contact/notifications/${notificationId}/read`; // Reuse same endpoint for simplicity
+          ? `https://step-in-style-backend.onrender.com/api/contact/notifications/${notificationId}/read`
+          : `https://step-in-style-backend.onrender.com/api/contact/notifications/${notificationId}/read`; // Reuse same endpoint for simplicity
         
         const response = await fetch(endpoint, {
           method: 'PUT'

@@ -23,26 +23,20 @@ export default function OrderSuccessPage() {
   return (
     <div className="order-success-container">
       <div className="order-success-content">
-        {/* Success Icon */}
-        <div className="success-icon">
-          <div className="success-checkmark">
-            <div className="check-icon">
-              <span className="icon-line line-tip"></span>
-              <span className="icon-line line-long"></span>
-              <div className="icon-circle"></div>
-              <div className="icon-fix"></div>
-            </div>
+        {/* Left Column: Success Message & Order Details */}
+        <div className="success-left-column">
+          {/* Success Icon */}
+          <div className="success-icon">
+            <div className="success-checkmark"></div>
           </div>
-        </div>
 
-        {/* Success Message */}
-        <div className="success-message">
-          <h1>🎉 Συγχαρητήρια!</h1>
-          <h2>Η παραγγελία σας ολοκληρώθηκε επιτυχώς!</h2>
-        </div>
+          {/* Success Message */}
+          <div className="success-message">
+            <h1>🎉 Συγχαρητήρια!</h1>
+            <h2>Η παραγγελία σας ολοκληρώθηκε επιτυχώς!</h2>
+          </div>
 
-        {/* Order Details */}
-        <div className="order-details">
+          {/* Order Info Card */}
           <div className="order-info-card">
             <h3>Στοιχεία Παραγγελίας</h3>
             <div className="order-info-grid">
@@ -61,6 +55,26 @@ export default function OrderSuccessPage() {
             </div>
           </div>
 
+          {/* Action Buttons */}
+          <div className="success-actions">
+            <Link to="/products" className="btn-primary">
+              Συνέχεια Αγορών
+            </Link>
+            
+            {!isGuest && (
+              <Link to="/account" className="btn-secondary">
+                Οι Παραγγελίες Μου
+              </Link>
+            )}
+            
+            <Link to="/track-order" className="btn-outline">
+              Παρακολούθηση Παραγγελίας
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Column: Next Steps & Additional Info */}
+        <div className="success-right-column">
           {/* Next Steps */}
           <div className="next-steps-card">
             <h3>Τι ακολουθεί;</h3>
@@ -102,43 +116,22 @@ export default function OrderSuccessPage() {
               </Link>
             </div>
           )}
-        </div>
 
-        {/* Action Buttons */}
-        <div className="success-actions">
-          <Link to="/products" className="btn-primary">
-            Συνέχεια Αγορών
-          </Link>
-          
-          {!isGuest && (
-            <Link to="/account" className="btn-secondary">
-              Οι Παραγγελίες Μου
-            </Link>
-          )}
-          
-          <Link to="/track-order" className="btn-outline">
-            Παρακολούθηση Παραγγελίας
-          </Link>
-          
-          <Link to="/contact" className="btn-outline">
-            Επικοινωνία
-          </Link>
-        </div>
-
-        {/* Order Tracking Info */}
-        <div className="tracking-info">
-          <div className="tracking-card">
-            <h4>📋 Παρακολούθηση Παραγγελίας</h4>
-            <p>
-              Κρατήστε τον αριθμό παραγγελίας <strong>#{orderNumber}</strong> για 
-              παρακολούθηση της κατάστασης
-            </p>
-            {isGuest && (
-              <p className="tracking-note">
-                💡 Μπορείτε να παρακολουθήσετε την παραγγελία σας με το email και 
-                τον αριθμό παραγγελίας
+          {/* Order Tracking Info */}
+          <div className="tracking-info">
+            <div className="tracking-card">
+              <h4>📋 Παρακολούθηση Παραγγελίας</h4>
+              <p>
+                Κρατήστε τον αριθμό παραγγελίας <strong>#{orderNumber}</strong> για 
+                παρακολούθηση της κατάστασης
               </p>
-            )}
+              {isGuest && (
+                <p className="tracking-note">
+                  💡 Μπορείτε να παρακολουθήσετε την παραγγελία σας με το email και 
+                  τον αριθμό παραγγελίας
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

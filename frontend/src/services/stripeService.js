@@ -6,7 +6,7 @@ const stripePromise = loadStripe('pk_test_51S07YpJ3YksL6Dy2U3zGfioy2Gij7sdP17PZJ
 // Create payment intent
 export const createPaymentIntent = async (amount, orderData) => {
   try {
-    const response = await fetch('http://localhost:5000/api/stripe/create-payment-intent', {
+    const response = await fetch('https://step-in-style-backend.onrender.com/api/stripe/create-payment-intent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export const createPaymentIntent = async (amount, orderData) => {
 // Confirm payment
 export const confirmPayment = async (paymentIntentId) => {
   try {
-    const response = await fetch('http://localhost:5000/api/stripe/confirm-payment', {
+    const response = await fetch('https://step-in-style-backend.onrender.com/api/stripe/confirm-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

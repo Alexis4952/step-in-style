@@ -69,6 +69,29 @@ export function CartProvider({ children }) {
     setCart(prev => prev.map(item => item.id === id ? { ...item, qty } : item));
   };
 
+  // Αλλαγή νουμέρου προϊόντος
+  const updateItemSize = (id, selectedSize) => {
+    setCart(prev => prev.map(item => item.id === id ? { ...item, selectedSize } : item));
+  };
+
+  // Φόρτωση διαθέσιμων νουμέρων για ένα προϊόν
+  const getAvailableSizes = async (productId) => {
+    try {
+      const { data, error } = await supabase
+        .from('product_inventory')
+        .select('size, quantity')
+        .eq('product_id', productId)
+        .gt('quantity', 0); // Μόνο τα διαθέσιμα (ποσότητα > 0)
+      
+      if (error) throw error;
+      
+      return data ? data.map(item => item.size) : [];
+    } catch (err) {
+      console.error('Σφάλμα κατά τη φόρτωση διαθέσιμων νουμέρων:', err);
+      return [];
+    }
+  };
+
   // Καθάρισμα καλαθιού
   const clearCart = () => {
     setCart([]);
@@ -199,16 +222,18 @@ export function CartProvider({ children }) {
   const total = cart.reduce((sum, item) => sum + (Number(item.price) * item.qty), 0);
 
   return (
-    <CartContext.Provider value={{ 
+    <CartContext.Provider     value={{
       cart, 
       addToCart, 
       removeFromCart, 
       updateQty, 
+      updateItemSize,
+      getAvailableSizes,
       clearCart,
       total, 
       handleCheckout, 
       handleCheckoutWithPayment,
-      createOrder 
+      createOrder
     }}>
       {children}
     </CartContext.Provider>

@@ -29,6 +29,7 @@ import AdminProducts from './AdminProducts';
 import AdminUsers from './AdminUsers';
 import AdminMessages from './AdminMessages';
 import CheckoutPage from './CheckoutPage';
+import SizeSelector from './components/SizeSelector';
 import OrderSuccessPage from './OrderSuccessPage';
 import OrderTrackingPage from './OrderTrackingPage';
 // 🔥 ULTRA MODERN MOBILE IMPORTS
@@ -203,9 +204,16 @@ function OffersCarousel() {
 }
 
 function FloatingCart() {
-  const { cart, total, removeFromCart, updateQty } = useCart();
+  const { cart, total, removeFromCart, updateQty, updateItemSize } = useCart();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Έλεγχος αν υπάρχουν παπούτσια χωρίς νούμερο
+  const hasShoesWithoutSize = () => {
+    return cart.some(item => 
+      item.category === 'Παπούτσια' && (!item.selectedSize || item.selectedSize === '')
+    );
+  };
   return (
     <>
       <button className="FloatingCart" onClick={() => setOpen(o => !o)} aria-label="Άνοιγμα καλαθιού">
@@ -231,6 +239,10 @@ function FloatingCart() {
                         <div className="cart-item-name">{item.name}</div>
                         <div className="cart-item-brand">{item.brand}</div>
                         <div className="cart-item-price">{item.price} x {item.qty}</div>
+                        
+                        {/* Size Selector για παπούτσια στο FloatingCart */}
+                        <SizeSelector item={item} className="cart-size-selector" />
+                        
                         <div className="cart-item-qty">
                           <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))}>-</button>
                           <span>{item.qty}</span>
@@ -242,15 +254,20 @@ function FloatingCart() {
                   ))}
                 </ul>
                 <div className="cart-total">Σύνολο: <b>{total.toFixed(2)}€</b></div>
-                <button 
+                                <button 
                   className="cart-checkout-btn" 
                   onClick={() => {
                     setOpen(false);
                     navigate('/checkout');
+                  }} 
+                  disabled={cart.length === 0 || hasShoesWithoutSize()}
+                  style={{
+                    opacity: (cart.length === 0 || hasShoesWithoutSize()) ? 0.5 : 1,
+                    cursor: (cart.length === 0 || hasShoesWithoutSize()) ? 'not-allowed' : 'pointer',
+                    backgroundColor: hasShoesWithoutSize() ? '#666' : ''
                   }}
-                  disabled={cart.length === 0}
                 >
-                  Ολοκλήρωση Αγοράς
+                  {hasShoesWithoutSize() ? '⚠️ Επιλέξτε νούμερα' : 'Ολοκλήρωση Αγοράς'}
                 </button>
               </>
             )}

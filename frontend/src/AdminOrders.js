@@ -34,8 +34,8 @@ export default function AdminOrders() {
     try {
       setLoading(true);
       
-      // 1. Fetch orders from Supabase (existing orders)
-      let supabaseOrders = [];
+      // Fetch all orders from Supabase (both registered and guest orders)
+      let allOrders = [];
       try {
         const { data, error } = await supabase
           .from('orders')
@@ -43,50 +43,25 @@ export default function AdminOrders() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          supabaseOrders = data.map(order => ({
-            id: `ORD-${String(order.id).padStart(3, '0')}`,
+          allOrders = data.map(order => ({
+            id: `ORD-${String(order.id).padStart(8, '0')}`,
             customer: order.customer_name || 'Άγνωστος πελάτης',
             email: order.customer_email || 'Δεν υπάρχει email',
             date: new Date(order.created_at).toLocaleDateString('el-GR'),
             total: `${order.total}€`,
             status: order.status,
             originalId: order.id,
-            items: [],
-            source: 'supabase'
-          }));
-        }
-      } catch (supabaseError) {
-        console.log('Supabase orders not available:', supabaseError);
-      }
-
-      // 2. Fetch guest orders from our API
-      let guestOrders = [];
-      try {
-        const response = await fetch('http://localhost:5000/api/orders');
-        const result = await response.json();
-        
-        if (result.success && result.orders) {
-          guestOrders = result.orders.map(order => ({
-            id: order.order_number,
-            customer: order.customer_name,
-            email: order.customer_email,
-            date: new Date(order.created_at).toLocaleDateString('el-GR'),
-            total: `${order.total}€`,
-            status: order.status || 'pending',
-            originalId: order.id,
             items: order.items || [],
-            source: 'api',
             phone: order.customer_phone,
             address: order.customer_address,
+            source: 'supabase',
             order_type: order.order_type || 'guest'
           }));
         }
-      } catch (apiError) {
-        console.log('API orders not available:', apiError);
+      } catch (supabaseError) {
+        console.error('Error fetching orders from Supabase:', supabaseError);
+        allOrders = [];
       }
-
-      // 3. Combine and sort all orders
-      const allOrders = [...supabaseOrders, ...guestOrders];
       
       // Sort by date (newest first) - handle Greek date format
       allOrders.sort((a, b) => {
@@ -98,10 +73,11 @@ export default function AdminOrders() {
       });
 
       setOrders(allOrders);
-      console.log('📋 Loaded orders:', {
-        supabase: supabaseOrders.length,
-        guest: guestOrders.length,
-        total: allOrders.length
+      console.log('📋 Loaded orders from Supabase:', {
+        total: allOrders.length,
+        registered: allOrders.filter(order => order.order_type === 'registered').length,
+        guest: allOrders.filter(order => order.order_type === 'guest').length,
+        sampleOrder: allOrders[0] // Debug: δείχνω το πρώτο order
       });
 
     } catch (error) {
@@ -141,35 +117,16 @@ export default function AdminOrders() {
       else if (pendingStatus === 'Σε εξέλιξη') englishStatus = 'processing';
       else if (pendingStatus === 'Ακυρώθηκε') englishStatus = 'cancelled';
 
-      // Update status based on order source
-      if (order.source === 'api') {
-        // Guest order - update via our API
-        const response = await fetch(`http://localhost:5000/api/orders/${order.originalId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status: englishStatus })
-        });
+      // Update status in Supabase (all orders are now in Supabase)
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: englishStatus })
+        .eq('id', order.originalId);
 
-        const result = await response.json();
-        if (!result.success) {
-          console.error('Error updating guest order status:', result.error);
-          alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
-          return;
-        }
-      } else {
-        // Supabase order - update via Supabase
-        const { error } = await supabase
-          .from('orders')
-          .update({ status: englishStatus })
-          .eq('id', order.originalId);
-
-        if (error) {
-          console.error('Error updating Supabase order status:', error);
-          alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
-          return;
-        }
+      if (error) {
+        console.error('Error updating order status:', error);
+        alert('Σφάλμα κατά την ενημέρωση της κατάστασης!');
+        return;
       }
 
       // Update local state
@@ -263,13 +220,24 @@ export default function AdminOrders() {
       {/* Modal λεπτομερειών */}
       {selectedOrder && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'#0008',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>{setSelectedOrder(null); setPendingStatus('');}}>
-          <div style={{background:'#fff',borderRadius:18,padding:40,minWidth:340,maxWidth:480,boxShadow:'0 8px 48px #b87b2a22',position:'relative'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#fff',borderRadius:18,padding:40,minWidth:420,maxWidth:600,boxShadow:'0 8px 48px #b87b2a22',position:'relative',maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
             <div style={{fontWeight:900,fontSize:22,color:'#b87b2a',marginBottom:12}}>Λεπτομέρειες Παραγγελίας</div>
             <div style={{marginBottom:10}}><b>ID:</b> {selectedOrder.id}</div>
             <div style={{marginBottom:10}}><b>Πελάτης:</b> {selectedOrder.customer}</div>
             <div style={{marginBottom:10}}><b>Email:</b> {selectedOrder.email}</div>
             <div style={{marginBottom:10}}><b>Ημερομηνία:</b> {selectedOrder.date}</div>
             <div style={{marginBottom:10}}><b>Σύνολο:</b> {selectedOrder.total}</div>
+            {/* Στοιχεία Αποστολής */}
+            <div style={{marginBottom:15,padding:12,backgroundColor:'#fff6ec',borderRadius:8,border:'1px solid #f6c77a'}}>
+              <div style={{fontWeight:700,fontSize:16,color:'#b87b2a',marginBottom:8}}>📍 Στοιχεία Αποστολής</div>
+              {selectedOrder.address && (
+                <div style={{marginBottom:6}}><b>Διεύθυνση:</b> {selectedOrder.address}</div>
+              )}
+              {selectedOrder.phone && (
+                <div style={{marginBottom:6}}><b>Τηλέφωνο:</b> {selectedOrder.phone}</div>
+              )}
+            </div>
+            
             <div style={{marginBottom:10}}><b>Κατάσταση:</b>
               <>
                 <select 
@@ -285,12 +253,44 @@ export default function AdminOrders() {
                 <button onClick={()=>handleStatusSave(selectedOrder.id)} style={{marginLeft:10,background:'#4caf50',color:'#fff',border:'none',borderRadius:8,padding:'7px 16px',fontWeight:700,fontSize:15,cursor:'pointer'}}>Αποθήκευση</button>
               </>
             </div>
-            <div style={{marginBottom:10}}><b>Προϊόντα:</b>
-              <ul style={{margin:'8px 0 0 18px',padding:0}}>
-                {selectedOrder.items.map((item,idx)=>(
-                  <li key={idx}>{item.name} x{item.qty} ({item.price})</li>
-                ))}
-              </ul>
+            <div style={{marginBottom:15}}><b>📦 Προϊόντα Παραγγελίας:</b>
+              <div style={{marginTop:8,padding:12,backgroundColor:'#f8f9fa',borderRadius:8,border:'1px solid #dee2e6'}}>
+                {selectedOrder.items && selectedOrder.items.length > 0 ? selectedOrder.items.map((item,idx)=>(
+                  <div key={idx} style={{
+                    padding:'8px 0',
+                    borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid #e9ecef' : 'none',
+                    display:'flex',
+                    justifyContent:'space-between',
+                    alignItems:'center'
+                  }}>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:600,color:'#2d1c0b'}}>
+                        {item.name || item.product_name || 'Άγνωστο προϊόν'}
+                      </div>
+                      <div style={{fontSize:14,color:'#6c757d'}}>
+                        Ποσότητα: <span style={{fontWeight:600,color:'#b87b2a'}}>{item.qty || item.quantity}</span>
+                        {(item.selectedSize || item.selected_size) && (
+                          <span style={{marginLeft:12}}>
+                            👟 Νούμερο: <span style={{fontWeight:600,color:'#e74c3c'}}>{item.selectedSize || item.selected_size}</span>
+                          </span>
+                        )}
+                        {(item.category || item.product_category) && (
+                          <span style={{marginLeft:12,fontSize:12,color:'#999'}}>
+                            ({item.category || item.product_category})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{fontWeight:700,color:'#b87b2a',fontSize:16}}>
+                      {(parseFloat(item.price || 0) * (item.qty || item.quantity || 1)).toFixed(2)}€
+                    </div>
+                  </div>
+                )) : (
+                  <div style={{textAlign:'center',color:'#999',padding:'20px'}}>
+                    Δεν υπάρχουν διαθέσιμες πληροφορίες προϊόντων
+                  </div>
+                )}
+              </div>
             </div>
             <button onClick={()=>{setSelectedOrder(null); setPendingStatus('');}} style={{marginTop:18,background:'#b87b2a',color:'#fff',border:'none',borderRadius:10,padding:'10px 24px',fontWeight:700,fontSize:16,cursor:'pointer'}}>Κλείσιμο</button>
           </div>

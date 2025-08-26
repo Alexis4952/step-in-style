@@ -104,23 +104,7 @@ export default function AdminDashboard() {
           console.log('Orders table not found, using 0 orders');
         }
 
-        // 2. Get guest orders from API
-        try {
-          const response = await fetch('http://localhost:5000/api/orders');
-          const result = await response.json();
-          
-          if (result.success && result.orders) {
-            // Add guest orders to the orders array
-            const guestOrders = result.orders.map(order => ({
-              ...order,
-              total: parseFloat(order.total),
-              created_at: order.created_at
-            }));
-            orders = [...orders, ...guestOrders];
-          }
-        } catch (apiError) {
-          console.log('Guest orders not available:', apiError);
-        }
+        // All orders are now in Supabase (no need for separate API call)
 
         // Get all users (handle error gracefully)
         try {

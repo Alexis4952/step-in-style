@@ -234,27 +234,38 @@ const AccountDashboard = () => {
         console.error('Error fetching orders:', ordersError);
         setOrders([]);
       } else {
-        // For each order, fetch its items and product details
+        // For each order, process its items
         const ordersWithItems = await Promise.all(
           (ordersData || []).map(async (order) => {
-            // Fetch order items
-            const { data: orderItems, error: itemsError } = await supabase
-              .from('order_items')
-              .select(`
-                *,
-                products (
-                  id,
-                  name,
-                  description,
-                  image_url,
-                  category,
-                  subcategory
-                )
-              `)
-              .eq('order_id', order.id);
+            let processedItems = [];
+            
+            // Check if items exist in the order (from new CheckoutPage format)
+            if (order.items && Array.isArray(order.items)) {
+              // Process items with product details
+              processedItems = await Promise.all(
+                order.items.map(async (item) => {
+                  // Fetch product details from products table
+                  const { data: product, error: productError } = await supabase
+                    .from('products')
+                    .select('id, name, description, image_url, category, subcategory')
+                    .eq('id', item.product_id)
+                    .single();
 
-            if (itemsError) {
-              console.error('Error fetching order items:', itemsError);
+                  if (productError) {
+                    console.error('Error fetching product:', productError);
+                  }
+
+                  return {
+                    ...item,
+                    products: product || {
+                      name: item.product_name || 'Άγνωστο προϊόν',
+                      category: item.category || 'Άγνωστη κατηγορία',
+                      subcategory: 'Άγνωστη υποκατηγορία',
+                      image_url: null
+                    }
+                  };
+                })
+              );
             }
 
             return {
@@ -263,7 +274,7 @@ const AccountDashboard = () => {
               total: parseFloat(order.total),
               status: order.status,
               raw: order,
-              items: orderItems || []
+              items: processedItems
             };
           })
         );

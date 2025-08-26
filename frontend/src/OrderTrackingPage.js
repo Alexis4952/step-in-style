@@ -23,7 +23,7 @@ export default function OrderTrackingPage() {
     setOrderData(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/track/${orderNumber}?email=${encodeURIComponent(email)}`);
+      const response = await fetch(`https://step-in-style-backend.onrender.com/api/orders/track/${orderNumber}?email=${encodeURIComponent(email)}`);
       const result = await response.json();
 
       if (!result.success) {
