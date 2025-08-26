@@ -328,34 +328,83 @@ router.get('/track/:orderNumber', async (req, res) => {
         error: 'Απαιτείται email για παρακολούθηση παραγγελίας'
       });
     }
-    
-    const orders = await readOrders();
-    const order = orders.find(o => 
-      o.order_number === orderNumber && 
-      o.customer_email.toLowerCase() === email.toLowerCase()
+
+    // First check Supabase database (new orders)
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
     );
+
+    let order = null;
+
+    // Convert order number format (ORD-00000021 -> 21)
+    const orderId = orderNumber.replace('ORD-', '').replace(/^0+/, '') || '0';
+    
+    console.log('🔍 Tracking order:', { orderNumber, email, orderId });
+
+    // Try to find in Supabase first
+    try {
+      const { data: supabaseOrders, error: supabaseError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', parseInt(orderId))
+        .eq('customer_email', email.toLowerCase())
+        .single();
+
+      if (!supabaseError && supabaseOrders) {
+        console.log('✅ Found order in Supabase:', supabaseOrders.id);
+        order = {
+          order_number: `ORD-${String(supabaseOrders.id).padStart(8, '0')}`,
+          status: supabaseOrders.status,
+          total: supabaseOrders.total,
+          created_at: supabaseOrders.created_at,
+          items: supabaseOrders.items || []
+        };
+      }
+    } catch (supabaseError) {
+      console.log('⚠️ Supabase search failed:', supabaseError.message);
+    }
+
+    // If not found in Supabase, check JSON files (old orders)
+    if (!order) {
+      console.log('🔍 Searching in JSON files...');
+      const orders = await readOrders();
+      const jsonOrder = orders.find(o => 
+        o.order_number === orderNumber && 
+        o.customer_email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (jsonOrder) {
+        console.log('✅ Found order in JSON files:', jsonOrder.order_number);
+        order = {
+          order_number: jsonOrder.order_number,
+          status: jsonOrder.status,
+          total: jsonOrder.total,
+          created_at: jsonOrder.created_at,
+          items: jsonOrder.items.map(item => ({
+            product_name: item.product_name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        };
+      }
+    }
     
     if (!order) {
+      console.log('❌ Order not found:', { orderNumber, email });
       return res.status(404).json({
         success: false,
         error: 'Η παραγγελία δεν βρέθηκε με αυτά τα στοιχεία'
       });
     }
     
+    console.log('✅ Order tracking successful:', order.order_number);
+    
     // Return limited info for tracking
     res.json({
       success: true,
-      order: {
-        order_number: order.order_number,
-        status: order.status,
-        total: order.total,
-        created_at: order.created_at,
-        items: order.items.map(item => ({
-          product_name: item.product_name,
-          quantity: item.quantity,
-          price: item.price
-        }))
-      }
+      order: order
     });
   } catch (error) {
     console.error('Σφάλμα κατά την παρακολούθηση παραγγελίας:', error);
