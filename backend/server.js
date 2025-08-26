@@ -8,7 +8,7 @@ require('dotenv').config({ path: './config.env' });
 // Import routes
 const adminRoutes = require('./routes/admin');
 const contactRoutes = require('./routes/contact');
-const orderRoutes = require('./routes/orders');
+const orderRoutes = require('./routes/orders_supabase');
 const stripeRoutes = require('./routes/stripe');
 
 const app = express();

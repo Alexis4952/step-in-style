@@ -369,36 +369,26 @@ router.get('/track/:orderNumber', async (req, res) => {
       console.log('📋 Supabase search result:', { data: supabaseOrders, error: supabaseError });
       
       // If found, check email manually
-      if (supabaseOrders && supabaseOrders.customer_email) {
-        const orderEmail = supabaseOrders.customer_email.toLowerCase();
+      if (supabaseOrders && supabaseOrders.length > 0) {
+        const foundOrder = supabaseOrders[0]; // Get first order from array
+        const orderEmail = foundOrder.customer_email.toLowerCase();
         const searchEmail = email.toLowerCase();
         console.log('📧 Email comparison:', { orderEmail, searchEmail, match: orderEmail === searchEmail });
         
         if (orderEmail === searchEmail) {
-          console.log('✅ Found order in Supabase:', supabaseOrders.id);
+          console.log('✅ Found order in Supabase:', foundOrder.id);
           order = {
-            order_number: `ORD-${String(supabaseOrders.id).padStart(8, '0')}`,
-            status: supabaseOrders.status,
-            total: supabaseOrders.total,
-            created_at: supabaseOrders.created_at,
-            items: supabaseOrders.items || []
+            order_number: `ORD-${String(foundOrder.id).padStart(8, '0')}`,
+            status: foundOrder.status,
+            total: foundOrder.total,
+            created_at: foundOrder.created_at,
+            items: foundOrder.items || []
           };
         } else {
           console.log('❌ Email mismatch');
         }
       } else {
-        console.log('❌ Order not found or no email');
-      }
-
-      if (!supabaseError && supabaseOrders) {
-        console.log('✅ Found order in Supabase:', supabaseOrders.id);
-        order = {
-          order_number: `ORD-${String(supabaseOrders.id).padStart(8, '0')}`,
-          status: supabaseOrders.status,
-          total: supabaseOrders.total,
-          created_at: supabaseOrders.created_at,
-          items: supabaseOrders.items || []
-        };
+        console.log('❌ Order not found in Supabase');
       }
     } catch (supabaseError) {
       console.log('⚠️ Supabase search failed:', supabaseError.message);
