@@ -357,19 +357,31 @@ router.get('/track/:orderNumber', async (req, res) => {
       });
     }
     
-    const { data: order, error } = await supabase
-      .from('guest_orders')
-      .select('*')
-      .eq('order_number', orderNumber)
-      .eq('customer_email', email.toLowerCase())
-      .single();
+    // Convert ORD-00000024 -> 24 for ID search
+    const orderId = orderNumber.replace('ORD-', '').replace(/^0+/, '') || '0';
     
-    if (error || !order) {
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', parseInt(orderId));
+    
+    if (error || !orders || orders.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Η παραγγελία δεν βρέθηκε με αυτά τα στοιχεία'
       });
     }
+    
+    const order = orders[0];
+    
+    // Check email match
+    if (order.customer_email.toLowerCase() !== email.toLowerCase()) {
+      return res.status(404).json({
+        success: false,
+        error: 'Η παραγγελία δεν βρέθηκε με αυτά τα στοιχεία'
+      });
+    }
+
     
     // Parse items and return limited info for tracking
     const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
