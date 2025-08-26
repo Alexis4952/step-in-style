@@ -345,12 +345,36 @@ router.get('/track/:orderNumber', async (req, res) => {
 
     // Try to find in Supabase first
     try {
+      console.log('🔍 Searching Supabase with:', { orderId: parseInt(orderId), email: email.toLowerCase() });
+      
       const { data: supabaseOrders, error: supabaseError } = await supabase
         .from('orders')
         .select('*')
-        .eq('id', parseInt(orderId))
-        .ilike('customer_email', email.toLowerCase())
-        .single();
+        .eq('id', parseInt(orderId));
+
+      console.log('📋 Supabase search result:', { data: supabaseOrders, error: supabaseError });
+      
+      // If found, check email manually
+      if (supabaseOrders && supabaseOrders.customer_email) {
+        const orderEmail = supabaseOrders.customer_email.toLowerCase();
+        const searchEmail = email.toLowerCase();
+        console.log('📧 Email comparison:', { orderEmail, searchEmail, match: orderEmail === searchEmail });
+        
+        if (orderEmail === searchEmail) {
+          console.log('✅ Found order in Supabase:', supabaseOrders.id);
+          order = {
+            order_number: `ORD-${String(supabaseOrders.id).padStart(8, '0')}`,
+            status: supabaseOrders.status,
+            total: supabaseOrders.total,
+            created_at: supabaseOrders.created_at,
+            items: supabaseOrders.items || []
+          };
+        } else {
+          console.log('❌ Email mismatch');
+        }
+      } else {
+        console.log('❌ Order not found or no email');
+      }
 
       if (!supabaseError && supabaseOrders) {
         console.log('✅ Found order in Supabase:', supabaseOrders.id);
