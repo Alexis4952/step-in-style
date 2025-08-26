@@ -17,6 +17,9 @@ const PORT = process.env.PORT || 5000;
 // Security middleware
 app.use(helmet());
 
+// Trust proxy for Render
+app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
