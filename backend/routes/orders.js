@@ -367,7 +367,16 @@ router.get('/track/:orderNumber', async (req, res) => {
         .eq('id', parseInt(orderId))
         .eq('customer_email', email.toLowerCase());
 
-      console.log('📋 Supabase search result:', { data: supabaseOrders, error: supabaseError });
+      console.log('📋 Supabase search result:', { 
+        data: supabaseOrders, 
+        error: supabaseError,
+        dataLength: supabaseOrders ? supabaseOrders.length : 0,
+        hasData: !!(supabaseOrders && supabaseOrders.length > 0)
+      });
+      
+      if (supabaseError) {
+        console.log('❌ Supabase error:', supabaseError);
+      }
       
       // If found, order is already validated by database query
       if (supabaseOrders && supabaseOrders.length > 0) {
