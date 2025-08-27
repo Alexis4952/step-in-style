@@ -346,6 +346,14 @@ router.get('/track/:orderNumber', async (req, res) => {
       {
         auth: {
           persistSession: false
+        },
+        global: {
+          fetch: (url, options = {}) => {
+            return fetch(url, {
+              ...options,
+              timeout: 10000, // 10 second timeout
+            });
+          }
         }
       }
     );
@@ -393,7 +401,13 @@ router.get('/track/:orderNumber', async (req, res) => {
         console.log('❌ Order not found in Supabase');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase search failed:', supabaseError.message);
+      console.log('⚠️ Supabase search failed:', {
+        message: supabaseError.message,
+        code: supabaseError.code,
+        details: supabaseError.details,
+        hint: supabaseError.hint,
+        stack: supabaseError.stack
+      });
     }
 
     // If not found in Supabase, check JSON files (old orders)
