@@ -365,31 +365,46 @@ router.get('/track/:orderNumber', async (req, res) => {
     
     console.log('🔍 Tracking order:', { orderNumber, email, orderId });
 
-    // Try to find in Supabase first
+    // Try to find in Supabase first using direct REST API
     try {
-      console.log('🔍 Searching Supabase with:', { orderId: parseInt(orderId), email: email.toLowerCase() });
+      console.log('🔍 Searching Supabase with direct REST API:', { orderId: parseInt(orderId), email: email.toLowerCase() });
       
-      const { data: supabaseOrders, error: supabaseError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', parseInt(orderId))
-        .eq('customer_email', email.toLowerCase());
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+      
+      const apiUrl = `${supabaseUrl}/rest/v1/orders?id=eq.${parseInt(orderId)}&customer_email=eq.${encodeURIComponent(email.toLowerCase())}&select=*`;
+      
+      console.log('🌐 Making direct API call to:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        timeout: 15000
+      });
 
-      console.log('📋 Supabase search result:', { 
+      console.log('📡 API Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const supabaseOrders = await response.json();
+      
+      console.log('📋 Supabase REST API result:', { 
         data: supabaseOrders, 
-        error: supabaseError,
         dataLength: supabaseOrders ? supabaseOrders.length : 0,
         hasData: !!(supabaseOrders && supabaseOrders.length > 0)
       });
       
-      if (supabaseError) {
-        console.log('❌ Supabase error:', supabaseError);
-      }
-      
       // If found, order is already validated by database query
       if (supabaseOrders && supabaseOrders.length > 0) {
         const foundOrder = supabaseOrders[0]; // Get first order from array
-        console.log('✅ Found order in Supabase:', foundOrder.id);
+        console.log('✅ Found order in Supabase via REST API:', foundOrder.id);
         order = {
           order_number: `ORD-${String(foundOrder.id).padStart(8, '0')}`,
           status: foundOrder.status,
@@ -401,11 +416,8 @@ router.get('/track/:orderNumber', async (req, res) => {
         console.log('❌ Order not found in Supabase');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase search failed:', {
+      console.log('⚠️ Supabase REST API search failed:', {
         message: supabaseError.message,
-        code: supabaseError.code,
-        details: supabaseError.details,
-        hint: supabaseError.hint,
         stack: supabaseError.stack
       });
     }
